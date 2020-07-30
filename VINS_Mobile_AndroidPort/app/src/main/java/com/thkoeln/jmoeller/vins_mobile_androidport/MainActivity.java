@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     // camera2 API Camera
     private CameraDevice camera;
     // Back cam, 1 would be the front facing one
-    private String cameraID = "0";
+    private String cameraID = "1";
 
     // Texture View to display the camera picture, or the vins output
     private TextureView textureView;

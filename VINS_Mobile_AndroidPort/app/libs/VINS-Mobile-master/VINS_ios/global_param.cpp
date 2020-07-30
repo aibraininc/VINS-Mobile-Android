@@ -125,10 +125,19 @@ bool setGlobalParam(DeviceType device)
 
         case GalaxyS7:
             printf("Device GalaxyS7 param\n");
-            FOCUS_LENGTH_X = 478.7620;
-            FOCUS_LENGTH_Y = 478.6281;
-            PX = 231.9446;
-            PY = 319.5067;
+
+            // galaxy note
+            FOCUS_LENGTH_X = 596.0613;
+            FOCUS_LENGTH_Y = 597.2975;
+            PX = 226.9987;
+            PY = 315.5561;
+
+            // lg
+//            FOCUS_LENGTH_X = 326.1023;
+//            FOCUS_LENGTH_Y = 325.5231;
+//            PX = 230.8169;
+//            PY = 308.0056;
+
 
             SOLVER_TIME = 1.0; // 0.06 TODO
             FREQ = 3;

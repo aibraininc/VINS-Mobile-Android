@@ -23,7 +23,7 @@ enum DeviceType
 //extrinsic param
 #define RIC_y ((double)0.0)
 #define RIC_p ((double)0.0)
-#define RIC_r ((double)180.0)
+#define RIC_r ((double)0.0)
 #define MIN_LOOP_NUM 22
 #define LOOP_FREQ 3
 #define WINDOW_SIZE 10
