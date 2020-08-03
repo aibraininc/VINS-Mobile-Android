@@ -29,6 +29,7 @@ import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -44,7 +45,7 @@ import java.util.List;
  * manages camera input, texture output
  * textViews and buttons
  */
-public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
 
     private static final String TAG = "MainActivity";
 
@@ -89,7 +90,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private TextView tvLoop;
     private TextView tvFeature;
     private TextView tvBuf;
-    
+
+    private Button slamButton;
+    private boolean isSLAM;
     // ImageView for initialization instructions
     private ImageView ivInit;
 
@@ -121,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         initLooper();
         initVINS();
         initViews();
+        isSLAM = true;
     }
 
     /**
@@ -175,6 +179,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * Setting TextureView Listener to this object.
      */
     private void initViews() {
+
+        slamButton = (Button) findViewById(R.id.button);
+        slamButton.setOnClickListener(this);
+
         tvX = (TextView) findViewById(R.id.x_Label);
         tvY = (TextView) findViewById(R.id.y_Label);
         tvZ = (TextView) findViewById(R.id.z_Label);
@@ -471,6 +479,20 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             if(!hasAllPermissions){
                 finish();
             }
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        if(isSLAM) {
+            // stop slam
+            VinsJNI.onStopSLAM();
+            isSLAM = false;
+        }
+        else {
+            // start slam
+            vinsJNI.onRestartSLAM();
+            isSLAM = true;
         }
     }
 }

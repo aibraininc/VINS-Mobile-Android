@@ -130,6 +130,21 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onPause(JNIEnv *env,
     viewControllerGlobal->imuStopUpdate();
 }
 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onRestartSLAM(JNIEnv *env, jclass type) {
+    viewControllerGlobal->isSLAM = true;
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onStopSLAM(JNIEnv *env, jclass type) {
+    viewControllerGlobal->isSLAM = false;
+}
+
+
 // Constants for ImageView visibility coming from Java
 const int VISIBLE = 0x00000000;
 const int INVISIBLE = 0x00000004;

@@ -545,6 +545,7 @@ void ViewController::run() {
     while(!mainLoop_isCancelled) // while (![[NSThread currentThread] isCancelled])
     {
         LOGI("THREAD: Main Thread(run): process()");
+        if(isSLAM)
         process(); // [self process];
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // [NSThread sleepForTimeInterval:0.01];
         LOGI("THREAD: Main Thread iteration done");

@@ -401,6 +401,7 @@ public:
 
     //TODO: solve quick fix
     bool mainLoop_isCancelled = false;
+    bool isSLAM = true;
     /**
      * VINS thread: this thread tightly fuses the visual measurements and imu data and solves pose, velocity, IMU bias, 3D feature for all frame in WINNDOW
      * If the newest frame is keyframe, then push it into keyframe database

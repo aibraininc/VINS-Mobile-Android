@@ -27,7 +27,9 @@ public class VinsJNI implements Serializable {
                                              TextView tvBuf, ImageView initImage);
     
     public static native void onPause();
-    
+    public static native void onRestartSLAM();
+    public static native void onStopSLAM();
+
     public static native void onARSwitch(boolean isChecked);
     public static native void onLoopSwitch(boolean isChecked);
 }
