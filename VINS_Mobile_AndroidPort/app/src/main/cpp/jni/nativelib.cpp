@@ -200,3 +200,23 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onLoopSwitch(JNIEnv 
     if(viewControllerGlobal)
         viewControllerGlobal->loopButtonPressed(isChecked);
 }
+
+
+extern "C"
+JNIEXPORT jfloatArray JNICALL
+Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_getPosition(JNIEnv *env,
+                                                                         jclass clazz) {
+
+    jfloat array1[3];
+    if(viewControllerGlobal)
+    {
+        array1[0] = viewControllerGlobal->x_view_last;
+        array1[1] = viewControllerGlobal->y_view_last;
+        array1[2] = viewControllerGlobal->z_view_last;
+    }
+    jfloatArray result;
+    result = env->NewFloatArray(3);
+    env->SetFloatArrayRegion(result, 0, 3, array1);
+    return result;
+
+}

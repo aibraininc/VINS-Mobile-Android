@@ -410,6 +410,26 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             runOnUiThread(new Runnable() {
                 public void run() {
                     VinsJNI.updateViewInfo(tvX, tvY, tvZ, tvTotal, tvLoop, tvFeature, tvBuf, ivInit);
+
+//                    String[] position = new String[3];
+//                    if(tvX.getText().toString().split("X: ").length == 2){
+//                        position[0] = tvX.getText().toString().split("X: ")[1];
+//                    }
+//                    if(tvY.getText().toString().split("Y: ").length == 2){
+//                        position[1] = tvY.getText().toString().split("Y: ")[1];
+//                    }
+//                    if(tvZ.getText().toString().split("Z: ").length == 2){
+//                        position[2] = tvZ.getText().toString().split("Z: ")[1];
+//                    }
+
+
+                    float [] position = VinsJNI.getPosition();
+                    Log.e(TAG, "runOnUiThread X: " + position[0]);
+                    Log.e(TAG, "runOnUiThread Y: " + position[1]);
+                    Log.e(TAG, "runOnUiThread Z: " + position[2]);
+
+
+
                 }
             });
 

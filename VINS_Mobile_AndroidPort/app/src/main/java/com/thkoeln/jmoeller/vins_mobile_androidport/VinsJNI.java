@@ -25,7 +25,11 @@ public class VinsJNI implements Serializable {
     public static native void updateViewInfo(TextView tvX, TextView tvY, TextView tvZ,
                                              TextView tvTotal, TextView tvLoop, TextView tvFeature,
                                              TextView tvBuf, ImageView initImage);
-    
+
+
+    public static native float[] getPosition();
+
+
     public static native void onPause();
     public static native void onRestartSLAM();
     public static native void onStopSLAM();

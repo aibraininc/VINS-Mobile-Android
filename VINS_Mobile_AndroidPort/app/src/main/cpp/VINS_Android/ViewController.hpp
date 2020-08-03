@@ -211,11 +211,6 @@ private:
 // Textview for showing vins status
     int loop_old_index = -1;
 
-    float x_view_last = -5000;
-
-    float y_view_last = -5000;
-
-    float z_view_last = -5000;
 
     float total_odom = 0;
 
@@ -249,6 +244,10 @@ private:
     NSTimeInterval lateast_imu_time = -1;
 public:
     NSTimeInterval getLateast_imu_time() const;
+
+    float x_view_last = -5000;
+    float y_view_last = -5000;
+    float z_view_last = -5000;
 
 private:
 
