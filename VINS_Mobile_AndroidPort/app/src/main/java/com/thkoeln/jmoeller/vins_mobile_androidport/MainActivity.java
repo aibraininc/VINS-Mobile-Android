@@ -2,6 +2,7 @@ package com.thkoeln.jmoeller.vins_mobile_androidport;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -17,6 +18,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -35,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
 
     private static final String TAG = "MainActivity";
+    private static final int REQUEST_CODE = 1234;
 
     // needed for permission request callback
     private static final int PERMISSIONS_REQUEST_CODE = 12345;
@@ -173,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         vinsJNI = new VinsJNI();
         vinsJNI.init();
     }
-    
+
     /**
      * Finding all UI Elements,
      * Setting TextureView Listener to this object.
@@ -182,6 +186,17 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         slamButton = (Button) findViewById(R.id.button);
         slamButton.setOnClickListener(this);
+//
+        Button speechButton = (Button)findViewById(R.id.speech_button);
+        speechButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        });
 
         tvX = (TextView) findViewById(R.id.x_Label);
         tvY = (TextView) findViewById(R.id.y_Label);
@@ -441,17 +456,17 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * shutting down onPause
      */
     protected void onPause() {
-        if (null != camera) {
-            camera.close();
-            camera = null;
-        }
-        if (null != imageReader) {
-            imageReader.close();
-            imageReader = null;
-        }
-        
-        VinsJNI.onPause();
-        
+        Log.e("onPause","onPause");
+//        if (null != camera) {
+//            camera.close();
+//            camera = null;
+//        }
+//        if (null != imageReader) {
+//            imageReader.close();
+//            imageReader = null;
+//        }
+//
+//        VinsJNI.onPause();
         super.onPause();
     }
 
@@ -506,7 +521,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public void onClick(View view) {
         if(isSLAM) {
             // stop slam
-            VinsJNI.onStopSLAM();
+            vinsJNI.onStopSLAM();
             isSLAM = false;
         }
         else {
@@ -515,4 +530,29 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             isSLAM = true;
         }
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+            ArrayList<String> matches_text;
+            matches_text = data
+                    .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            Log.v("onActivityResult", matches_text.get(0));
+            Toast.makeText(getApplicationContext(), matches_text.get(0), Toast.LENGTH_LONG).show();
+
+            if(matches_text.get(0).contains("시작")){
+                vinsJNI.onRestartSLAM();
+                isSLAM = true;
+            }
+            else if(matches_text.get(0).contains("그만")){
+                vinsJNI.onStopSLAM();
+                isSLAM = false;
+            }
+
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
 }

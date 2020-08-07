@@ -192,5 +192,15 @@
 
         android:text="SLAM start/stop" />
 
+
+    <Button
+        android:id="@+id/speech_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/button"
+        android:layout_alignTop="@id/button"
+        android:layout_marginTop="48dp"
+        android:text="Speech recognition" />
+
 </RelativeLayout>
   
