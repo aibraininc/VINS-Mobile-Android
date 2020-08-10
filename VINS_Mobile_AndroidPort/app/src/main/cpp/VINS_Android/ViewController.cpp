@@ -162,7 +162,8 @@ void ViewController::viewDidLoad() {
 }
 
 void ViewController::processImage(cv::Mat &image, double timeStamp, bool isScreenRotated) {
-    
+    if(isSLAM == false)
+        return;
     TS(ViewController_processImage);
 //- (void)processImage:(cv::Mat&)image {
 //    LOGI("Mat Width(cols): %d, Height(rows): %d isCapturing: %d", image.cols, image.rows, isCapturing);
