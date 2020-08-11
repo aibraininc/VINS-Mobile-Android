@@ -437,14 +437,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 //                        position[2] = tvZ.getText().toString().split("Z: ")[1];
 //                    }
 
-
+                    // Get position from Vins
                     float [] position = VinsJNI.getPosition();
-                    Log.e(TAG, "runOnUiThread X: " + position[0]);
-                    Log.e(TAG, "runOnUiThread Y: " + position[1]);
-                    Log.e(TAG, "runOnUiThread Z: " + position[2]);
-
-
-
+//                    Log.e(TAG, "runOnUiThread X: " + position[0]);
+//                    Log.e(TAG, "runOnUiThread Y: " + position[1]);
+//                    Log.e(TAG, "runOnUiThread Z: " + position[2]);
+                    Log.e(TAG, "runOnUiThread Yaw: " + position[3]);
                 }
             });
 

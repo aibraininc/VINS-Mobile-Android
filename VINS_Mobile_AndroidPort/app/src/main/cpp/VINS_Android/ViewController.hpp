@@ -248,6 +248,7 @@ public:
     float x_view_last = -5000;
     float y_view_last = -5000;
     float z_view_last = -5000;
+    float yaw_view = 0;
 
 private:
 

@@ -207,16 +207,17 @@ JNIEXPORT jfloatArray JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_getPosition(JNIEnv *env,
                                                                          jclass clazz) {
 
-    jfloat array1[3];
+    jfloat array1[4];
     if(viewControllerGlobal)
     {
         array1[0] = viewControllerGlobal->x_view_last;
         array1[1] = viewControllerGlobal->y_view_last;
         array1[2] = viewControllerGlobal->z_view_last;
+        array1[3] = viewControllerGlobal->yaw_view;
     }
     jfloatArray result;
-    result = env->NewFloatArray(3);
-    env->SetFloatArrayRegion(result, 0, 3, array1);
+    result = env->NewFloatArray(4);
+    env->SetFloatArrayRegion(result, 0, 4, array1);
     return result;
 
 }
