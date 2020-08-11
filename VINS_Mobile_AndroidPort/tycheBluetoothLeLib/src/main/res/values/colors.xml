@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+    <color name="color_ble_conn_bg">#1F67B1</color>
+    <color name="color_ble_conn_accent">#48A8E2</color>
+    <color name="color_ble_conn_border">@android:color/white</color>
+    <color name="color_ble_conn_text">@android:color/white</color>
+    -->
+
+    <color name="color_ble_conn_bg">#2DAFCD</color>
+    <color name="color_ble_conn_accent">#60A9C1</color>
+    <color name="color_ble_conn_border">@android:color/white</color>
+    <color name="color_ble_conn_text">@android:color/white</color>
+
+</resources>

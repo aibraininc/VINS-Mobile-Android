@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TycheBluetoothLeLib</string>
+    <string name="title_activity_bluetooth_le_scan">BluetoothLeScanActivity</string>
+    <string name="hello_world">Hello world!</string>
+
+    <string name="txt_scan">Scan</string>
+    <string name="txt_re_scan">Re-Scan</string>
+    <string name="txt_enable">Enable</string>
+    <string name="txt_touch_bluetooth">Tap the scan button.</string>
+    <string name="txt_bluetooth_not_enabled">Bluetooth is not enabled.</string>
+    <string name="txt_tyche_not_found">Can\'t find Tyche.</string>
+    <string name="txt_tyche_found">Found Tyche.</string>
+    <string name="txt_select_tyche">Select your Tyche in the list below.</string>
+    <string name="txt_scanning">Scanning..</string>
+    <string name="txt_ble_not_supported">BLE is not supported.</string>
+    <string name="txt_bluetooth_not_supported">Bluetooth is not supported.</string>
+    <string name="txt_get_service_failed">Failed to get the system service.</string>
+    <string name="txt_location_needed">Scan needs the location service.</string>
+    <string name="txt_description1">Starting</string>
+    <string name="txt_description2">Connection process</string>
+    <string name="txt_conn_success">Connection success!</string>
+    <string name="txt_conn_fail">Connection failed..</string>
+    <string name="txt_try_again">Try again</string>
+    <string name="txt_connecting">Connecting..</string>
+    
+</resources>

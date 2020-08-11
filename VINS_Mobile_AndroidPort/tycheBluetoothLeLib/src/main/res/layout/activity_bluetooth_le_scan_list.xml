@@ -1,0 +1,117 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activityLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_ble_conn_bg"
+    tools:context="com.aibrain.tyche.bluetoothle.activity.BluetoothLeScanActivity" >
+
+    <Button
+        android:id="@+id/bt_virtual"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="83dp"
+        android:layout_marginStart="48dp"
+        android:text="@string/txt_enable"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/bt_cancel"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:scaleType="fitXY"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_dialog_close"
+        android:background="@android:color/transparent" />
+
+    <TextView
+        android:id="@+id/tv_scan_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bt_cancel"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:textColor="@color/color_ble_conn_text"
+        android:textSize="25sp"
+        android:text="@string/txt_touch_bluetooth"
+        android:visibility="invisible"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_scan_status"
+        android:layout_above="@id/bt_virtual"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:horizontalSpacing="3dp"
+        android:verticalSpacing="2dp"
+        android:visibility="gone"
+        android:scrollbars="vertical"/>
+
+    <Button
+        android:id="@+id/bt_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_below="@id/recyclerView_devices"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="48dp"
+        android:textColor="@color/color_ble_conn_text"
+        android:background="@drawable/selector_custom_btn"
+        android:elevation="1dp"
+        android:text="@string/txt_re_scan"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/bt_enable"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_below="@id/recyclerView_devices"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="48dp"
+        android:textColor="@color/color_ble_conn_text"
+        android:background="@drawable/selector_custom_btn"
+        android:elevation="1dp"
+        android:text="@string/txt_enable"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/tv_description1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:textStyle="italic"
+        android:textColor="@color/color_ble_conn_text"
+        android:textSize="25sp"
+        android:text="@string/txt_description1"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/tv_description2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_description1"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:textStyle="italic"
+        android:textColor="@color/color_ble_conn_text"
+        android:textSize="25sp"
+        android:text="@string/txt_description2"
+        android:visibility="invisible"/>
+
+</RelativeLayout>
