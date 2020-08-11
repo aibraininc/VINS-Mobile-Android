@@ -13,9 +13,9 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.speech.RecognizerIntent;
@@ -23,7 +23,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Range;
 import android.util.Rational;
@@ -38,6 +37,16 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.aibrain.tyche.bluetoothle.TycheControlHelper;
+import com.aibrain.tyche.bluetoothle.constants.Mode;
+import com.aibrain.tyche.bluetoothle.drive.Drive;
+import com.aibrain.tyche.bluetoothle.drive.RotateDrive;
+import com.aibrain.tyche.bluetoothle.exception.InvalidNumberException;
+import com.aibrain.tyche.bluetoothle.exception.NotConnectedException;
+import com.aibrain.tyche.bluetoothle.exception.NotEnoughBatteryException;
+import com.aibrain.tyche.bluetoothle.exception.NotSupportSensorException;
+import com.aibrain.tyche.bluetoothle.packet.receive.StatusData;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -109,6 +118,29 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private final float minVirtualCamDistance = 2;
     private final float maxVirtualCamDistance = 40;
 
+    // Tyche control instance
+    private TycheControlHelper tycheControlHelper = new TycheControlHelper(this, new TycheControlHelper.OnChangeStatusListener() {
+        @Override
+        public void onConnectionStatusChange(boolean isConnect) {
+
+        }
+
+        @Override
+        public void onStatusChange(StatusData status) {
+
+        }
+
+        @Override
+        public void onObstacleDetected(int distance) {
+
+        }
+
+        @Override
+        public void onNotEnoughBattery() {
+
+        }
+    });
+
     /**
      * Gets Called after App start
      */
@@ -129,6 +161,17 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         initVINS();
         initViews();
         isSLAM = true;
+
+        // tyche open
+        tycheControlHelper.open();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // tyche close
+        tycheControlHelper.close(true);
     }
 
     /**
@@ -553,4 +596,27 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+
+    private void tycheLookAround()
+    {
+
+        RotateDrive left90 = new RotateDrive(Mode.ENCODER);
+        left90.setAngle(-90);
+        left90.setRestTime(500);   // millisecond
+
+        RotateDrive rigth180 = new RotateDrive(Mode.ENCODER);
+        rigth180.setAngle(180);
+        rigth180.setRestTime(500);   // millisecond
+
+        ArrayList<Drive> path = new ArrayList<>();
+        path.add(left90);
+        path.add(rigth180);
+        path.add(left90);
+
+        try {
+            tycheControlHelper.drive(path);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
 }
