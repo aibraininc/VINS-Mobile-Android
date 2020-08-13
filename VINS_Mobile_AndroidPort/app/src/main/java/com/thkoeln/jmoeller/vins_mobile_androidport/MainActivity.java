@@ -39,13 +39,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aibrain.tyche.bluetoothle.TycheControlHelper;
+import com.aibrain.tyche.bluetoothle.constants.Direction;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
+import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
 import com.aibrain.tyche.bluetoothle.drive.RotateDrive;
+import com.aibrain.tyche.bluetoothle.drive.TimeDrive;
 import com.aibrain.tyche.bluetoothle.exception.InvalidNumberException;
 import com.aibrain.tyche.bluetoothle.exception.NotConnectedException;
 import com.aibrain.tyche.bluetoothle.exception.NotEnoughBatteryException;
 import com.aibrain.tyche.bluetoothle.exception.NotSupportSensorException;
+import com.aibrain.tyche.bluetoothle.executor.Executor;
 import com.aibrain.tyche.bluetoothle.packet.receive.StatusData;
 
 import java.io.File;
@@ -164,6 +168,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         // tyche open
         tycheControlHelper.open();
+        // enable obstacle detecting mode. Default is moving backward when Tyche meets obstacles.
+        tycheControlHelper.enableObstacleDetector(true);
     }
 
     @Override
@@ -599,25 +605,165 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
 
-    private void tycheLookAround()
+    private void tycheExample()
     {
+        // tyche move forward with velocity 50 for 1000 ms
+        TimeDrive d1 = new TimeDrive();
+        d1.setDirection(Direction.FORWARD);
+        d1.setDuration(1000);
+        d1.setVelocity(50);
+        d1.setRestTime(500);   // rest for 500ms after finishing moving
 
-        RotateDrive left90 = new RotateDrive(Mode.ENCODER);
-        left90.setAngle(-90);
-        left90.setRestTime(500);   // millisecond
+        // tyche move backward with velocity 40 as 20centimeters
+        MoveDrive d2 = new MoveDrive();
+        d2.setVelocity(40);
+        d2.setDistance(-20);
 
-        RotateDrive rigth180 = new RotateDrive(Mode.ENCODER);
-        rigth180.setAngle(180);
-        rigth180.setRestTime(500);   // millisecond
+        // tyche turns left as 90 degrees
+        RotateDrive d3 = new RotateDrive(Mode.ENCODER);
+        d3.setAngle(-90);
+        d3.setRestTime(500);
+
+        // tyche turn right as 180 degrees
+        RotateDrive d4 = new RotateDrive(Mode.ENCODER);
+        d4.setAngle(180);
+        d4.setRestTime(500);   // rest for 500ms after finishing moving
+
+        // tyche turn left with velocity 30 for 1 seconds
+        TimeDrive d5 = new TimeDrive();
+        d5.setDirection(Direction.LEFT);
+        d5.setVelocity(30);
+        d5.setDuration(1000);
+
 
         ArrayList<Drive> path = new ArrayList<>();
-        path.add(left90);
-        path.add(rigth180);
-        path.add(left90);
+        path.add(d1);
+        path.add(d2);
+        path.add(d3);
+        path.add(d4);
+        path.add(d5);
 
         try {
             tycheControlHelper.drive(path);
         } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @centimeter backward if centimeter < 0
+     * @velocity exception if velocity < 0
+     */
+    private void tycheMove(int centimeter, int velocity)
+    {
+        tycheMove(centimeter, velocity, null);
+    }
+
+    /*
+     * @centimeter backward if centimeter < 0
+     * @velocity exception if velocity < 0
+     * @listener called if moving finished
+     */
+    private void tycheMove(int centimeter, int velocity, Executor.OnFinishListener listener)
+    {
+        MoveDrive d = new MoveDrive();
+        d.setDistance(centimeter);
+        d.setVelocity(velocity);
+
+        try {
+            tycheControlHelper.drive(d, listener);
+
+        } catch (InvalidNumberException | NotEnoughBatteryException | NotSupportSensorException | NotConnectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @angle left if angle < 0, right if angle>0
+     */
+    private void tycheTurn(int angle)
+    {
+        tycheTurn(angle, null);
+    }
+
+    /*
+     * @angle left if angle < 0, right if angle>0
+     * @listener called if turning finished
+     */
+    private void tycheTurn(int angle, Executor.OnFinishListener listener)
+    {
+        RotateDrive d = new RotateDrive(Mode.ENCODER);
+        d.setAngle(angle);
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn left for duration milliseconds
+     */
+    private void tycheTurnLeft(int velocity, int duration)
+    {
+        tycheTurnLeft(velocity, duration, null);
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn left for duration milliseconds
+     * @listener called if turning finished
+     */
+    private void tycheTurnLeft(int velocity, int duration, Executor.OnFinishListener listener)
+    {
+        TimeDrive d = new TimeDrive();
+        d.setDirection(Direction.LEFT);
+        d.setVelocity(velocity);
+        d.setDuration(duration);
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn right for duration milliseconds
+     */
+    private void tycheTurnRight(int velocity, int duration)
+    {
+        tycheTurnRight(velocity, duration, null);
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn right for duration milliseconds
+     * @listener called if turning finished
+     */
+    private void tycheTurnRight(int velocity, int duration, Executor.OnFinishListener listener)
+    {
+        TimeDrive d = new TimeDrive();
+        d.setDirection(Direction.RIGHT);
+        d.setVelocity(velocity);
+        d.setDuration(duration);
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @leftVelocity left motor control, -100 <= leftVelocity <= 100, reverse if leftVelocity < 0
+     * @rightVelocity right motor control, -100 <= rightVelocity <= 100, reverse if rightVelocity < 0
+     */
+    private void tycheMoveDirectly(int leftVelocity, int rightVelocity)
+    {
+        try {
+            tycheControlHelper.operate(leftVelocity, rightVelocity);
+        } catch (NotConnectedException | NotEnoughBatteryException e) {
             e.printStackTrace();
         }
     }
