@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -41,23 +42,26 @@ import android.widget.Toast;
 import com.aibrain.tyche.bluetoothle.TycheControlHelper;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
+import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
 import com.aibrain.tyche.bluetoothle.drive.RotateDrive;
 import com.aibrain.tyche.bluetoothle.exception.InvalidNumberException;
 import com.aibrain.tyche.bluetoothle.exception.NotConnectedException;
 import com.aibrain.tyche.bluetoothle.exception.NotEnoughBatteryException;
 import com.aibrain.tyche.bluetoothle.exception.NotSupportSensorException;
 import com.aibrain.tyche.bluetoothle.packet.receive.StatusData;
+import com.google.android.gms.location.places.Place;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * {@link MainActivity} only activity
  * manages camera input, texture output
  * textViews and buttons
  */
-public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, TextToSpeech.OnInitListener {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_CODE = 1234;
@@ -118,6 +122,45 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private final float minVirtualCamDistance = 2;
     private final float maxVirtualCamDistance = 40;
 
+    ArrayList<PlaceInfo> placeInfos;
+    public TextToSpeech tts;
+    public static float[] robotPosition;
+
+
+    void addPlace(String name, float x, float y, float z){
+        int length = placeInfos.size();
+        PlaceInfo place = new PlaceInfo(length,name,x,y,z);
+        placeInfos.add(place);
+    }
+
+    void updatePlace(int id, float x, float y, float z) {
+        int idx = -1;
+        for(int i =0; i< placeInfos.size();i++) {
+            if(id == placeInfos.get(i).id)
+                idx = i;
+        }
+        if(idx != -1) {
+            placeInfos.get(idx).x = x;
+            placeInfos.get(idx).y = y;
+            placeInfos.get(idx).z = z;
+        }
+    }
+
+    PlaceInfo searchPlace(float x, float y, float z){
+        if(placeInfos.size() == 0)
+            return new PlaceInfo();
+        int idx = 0;
+        float minDistance = 100;
+        for(int i =0; i< placeInfos.size();i++) {
+            float distance = placeInfos.get(i).calculateDistance(x,y,z);
+            if(distance < minDistance) {
+                minDistance = distance;
+                idx = i;
+            }
+        }
+        return placeInfos.get(idx);
+    }
+
     // Tyche control instance
     private TycheControlHelper tycheControlHelper = new TycheControlHelper(this, new TycheControlHelper.OnChangeStatusListener() {
         @Override
@@ -164,6 +207,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         // tyche open
         tycheControlHelper.open();
+        placeInfos = new ArrayList<PlaceInfo>();
+        tts = new TextToSpeech(MainActivity.this, this);
+
     }
 
     @Override
@@ -172,6 +218,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         // tyche close
         tycheControlHelper.close(true);
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
     }
 
     /**
@@ -481,11 +531,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 //                    }
 
                     // Get position from Vins
-                    float [] position = VinsJNI.getPosition();
+                    robotPosition = VinsJNI.getPosition();
 //                    Log.e(TAG, "runOnUiThread X: " + position[0]);
 //                    Log.e(TAG, "runOnUiThread Y: " + position[1]);
 //                    Log.e(TAG, "runOnUiThread Z: " + position[2]);
-                    Log.e(TAG, "runOnUiThread Yaw: " + position[3]);
+                    Log.e(TAG, "runOnUiThread Yaw: " + robotPosition[3]);
                 }
             });
 
@@ -590,10 +640,58 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 vinsJNI.onStopSLAM();
                 isSLAM = false;
             }
+            else if(matches_text.get(0).contains("앞으로")){
+                this.tycheForward();
+            }
+            else if(matches_text.get(0).contains("뒤로")){
+                this.tycheBack();
+            }
+            else if(matches_text.get(0).contains("회전")){
+                this.tycheLookAround();
+            }
+            else if(matches_text.get(0).contains("여기는")){
+                this.addPlace(matches_text.get(0), robotPosition[0],robotPosition[1],robotPosition[2]);
+//                Toast.makeText(getApplicationContext(), "등록", Toast.LENGTH_LONG).show();
+            }
+
+            else if(matches_text.get(0).contains("어디야")){
+
+                String test = this.searchPlace(robotPosition[0], robotPosition[1], robotPosition[2]).name;
+                Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
+                this.speakJust(test);
+            }
+
+
+            else if(matches_text.get(0).contains("테스트")){
+                speakJust("테스트");
+            }
+
 
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void tycheForward()
+    {
+        MoveDrive d =new MoveDrive();
+        d.setDistance(10);
+        try {
+            tycheControlHelper.drive(d);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void tycheBack()
+    {
+        MoveDrive d =new MoveDrive();
+        d.setDistance(-10);
+        try {
+            tycheControlHelper.drive(d);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -602,11 +700,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         RotateDrive left90 = new RotateDrive(Mode.ENCODER);
         left90.setAngle(-90);
-        left90.setRestTime(500);   // millisecond
+        left90.setRestTime(2000);   // millisecond
 
         RotateDrive rigth180 = new RotateDrive(Mode.ENCODER);
         rigth180.setAngle(180);
-        rigth180.setRestTime(500);   // millisecond
+        rigth180.setRestTime(2000);   // millisecond
 
         ArrayList<Drive> path = new ArrayList<>();
         path.add(left90);
@@ -618,5 +716,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
             e.printStackTrace();
         }
+    }
+
+    public void speakJust(String text) {
+        if(!tts.isSpeaking()) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    }
+
+    @Override
+    public void onInit(int i) {
+
     }
 }
