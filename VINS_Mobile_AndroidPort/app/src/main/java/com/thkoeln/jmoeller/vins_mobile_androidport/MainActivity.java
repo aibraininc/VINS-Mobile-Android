@@ -40,14 +40,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aibrain.tyche.bluetoothle.TycheControlHelper;
+import com.aibrain.tyche.bluetoothle.constants.Direction;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
 import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
 import com.aibrain.tyche.bluetoothle.drive.RotateDrive;
+import com.aibrain.tyche.bluetoothle.drive.TimeDrive;
 import com.aibrain.tyche.bluetoothle.exception.InvalidNumberException;
 import com.aibrain.tyche.bluetoothle.exception.NotConnectedException;
 import com.aibrain.tyche.bluetoothle.exception.NotEnoughBatteryException;
 import com.aibrain.tyche.bluetoothle.exception.NotSupportSensorException;
+import com.aibrain.tyche.bluetoothle.executor.Executor;
 import com.aibrain.tyche.bluetoothle.packet.receive.StatusData;
 import com.google.android.gms.location.places.Place;
 
@@ -210,6 +213,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         placeInfos = new ArrayList<PlaceInfo>();
         tts = new TextToSpeech(MainActivity.this, this);
 
+        // enable obstacle detecting mode. Default is moving backward when Tyche meets obstacles.
+        tycheControlHelper.enableObstacleDetector(true);
     }
 
     @Override
@@ -641,20 +646,44 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 isSLAM = false;
             }
             else if(matches_text.get(0).contains("앞으로")){
-                this.tycheForward();
+//                this.tycheForward();
+                this.tycheMove(50,30);
             }
             else if(matches_text.get(0).contains("뒤로")){
-                this.tycheBack();
+                this.tycheMove(-50,30);
+            }
+            else if(matches_text.get(0).contains("왼쪽")){
+//                this.tycheLookAround();
+                this.tycheTurnLeft(60,4000,1000);
+            }
+            else if(matches_text.get(0).contains("오른쪽")){
+//                this.tycheLookAround();
+                this.tycheTurnRight(60,4000,1000);
             }
             else if(matches_text.get(0).contains("회전")){
-                this.tycheLookAround();
+//                this.tycheLookAround();
+                this.tycheTurnLeft(60,4000,300);
+                this.tycheTurnRight(60,8000,300);
+                this.tycheTurnLeft(60,4000,300);
+//                this.tycheMoveDirectly(40,-40);
             }
+
+            else if(matches_text.get(0).contains("멈춰")){
+//                this.tycheLookAround();
+                this.tycheMoveDirectly(0,0);
+
+            }
+
+
             else if(matches_text.get(0).contains("여기는")){
                 this.addPlace(matches_text.get(0), robotPosition[0],robotPosition[1],robotPosition[2]);
 //                Toast.makeText(getApplicationContext(), "등록", Toast.LENGTH_LONG).show();
             }
 
             else if(matches_text.get(0).contains("어디야")){
+                this.tycheTurnLeft(60,4000,300);
+                this.tycheTurnRight(60,8000,300);
+                this.tycheTurnLeft(60,4000,300);
 
                 String test = this.searchPlace(robotPosition[0], robotPosition[1], robotPosition[2]).name;
                 Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
@@ -672,31 +701,36 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void tycheForward()
-    {
-        MoveDrive d =new MoveDrive();
-        d.setDistance(10);
-        try {
-            tycheControlHelper.drive(d);
-        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
-            e.printStackTrace();
-        }
-    }
 
-    private void tycheBack()
+    private void tycheExample()
     {
-        MoveDrive d =new MoveDrive();
-        d.setDistance(-10);
-        try {
-            tycheControlHelper.drive(d);
-        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
-            e.printStackTrace();
-        }
-    }
+        // tyche move forward with velocity 50 for 1000 ms
+        TimeDrive d1 = new TimeDrive();
+        d1.setDirection(Direction.FORWARD);
+        d1.setDuration(1000);
+        d1.setVelocity(50);
+        d1.setRestTime(500);   // rest for 500ms after finishing moving
 
+        // tyche move backward with velocity 40 as 20centimeters
+        MoveDrive d2 = new MoveDrive();
+        d2.setVelocity(40);
+        d2.setDistance(-20);
 
-    private void tycheLookAround()
-    {
+        // tyche turns left as 90 degrees
+        RotateDrive d3 = new RotateDrive(Mode.ENCODER);
+        d3.setAngle(-90);
+        d3.setRestTime(500);
+
+        // tyche turn right as 180 degrees
+        RotateDrive d4 = new RotateDrive(Mode.ENCODER);
+        d4.setAngle(180);
+        d4.setRestTime(500);   // rest for 500ms after finishing moving
+
+        // tyche turn left with velocity 30 for 1 seconds
+        TimeDrive d5 = new TimeDrive();
+        d5.setDirection(Direction.LEFT);
+        d5.setVelocity(30);
+        d5.setDuration(1000);
 
         RotateDrive left90 = new RotateDrive(Mode.ENCODER);
         left90.setAngle(-90);
@@ -707,9 +741,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         rigth180.setRestTime(2000);   // millisecond
 
         ArrayList<Drive> path = new ArrayList<>();
-        path.add(left90);
-        path.add(rigth180);
-        path.add(left90);
+        path.add(d1);
+        path.add(d2);
+        path.add(d3);
+        path.add(d4);
+        path.add(d5);
 
         try {
             tycheControlHelper.drive(path);
@@ -727,5 +763,125 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     public void onInit(int i) {
 
+    }
+
+    /*
+     * @centimeter backward if centimeter < 0
+     * @velocity exception if velocity < 0
+     */
+    private void tycheMove(int centimeter, int velocity)
+    {
+        tycheMove(centimeter, velocity, null);
+    }
+
+    /*
+     * @centimeter backward if centimeter < 0
+     * @velocity exception if velocity < 0
+     * @listener called if moving finished
+     */
+    private void tycheMove(int centimeter, int velocity, Executor.OnFinishListener listener)
+    {
+        MoveDrive d = new MoveDrive();
+        d.setDistance(centimeter);
+        d.setVelocity(velocity);
+
+        try {
+            tycheControlHelper.drive(d, listener);
+
+        } catch (InvalidNumberException | NotEnoughBatteryException | NotSupportSensorException | NotConnectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @angle left if angle < 0, right if angle>0
+     */
+    private void tycheTurn(int angle)
+    {
+        tycheTurn(angle, null);
+    }
+
+    /*
+     * @angle left if angle < 0, right if angle>0
+     * @listener called if turning finished
+     */
+    private void tycheTurn(int angle, Executor.OnFinishListener listener)
+    {
+        RotateDrive d = new RotateDrive(Mode.ENCODER);
+        d.setAngle(angle);
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn left for duration milliseconds
+     */
+    private void tycheTurnLeft(int velocity, int duration, int restDuration)
+    {
+        tycheTurnLeft(velocity, duration, restDuration, null);
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn left for duration milliseconds
+     * @listener called if turning finished
+     */
+    private void tycheTurnLeft(int velocity, int duration, int restDuration, Executor.OnFinishListener listener)
+    {
+        TimeDrive d = new TimeDrive();
+        d.setDirection(Direction.LEFT);
+        d.setVelocity(velocity);
+        d.setDuration(duration);
+        d.setRestTime((restDuration));
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn right for duration milliseconds
+     */
+    private void tycheTurnRight(int velocity, int duration, int restDuration)
+    {
+        tycheTurnRight(velocity, duration, restDuration, null);
+    }
+
+    /*
+     * @velocity exception if velocity < 0
+     * @duration turn right for duration milliseconds
+     * @listener called if turning finished
+     */
+    private void tycheTurnRight(int velocity, int duration, int restDuration, Executor.OnFinishListener listener)
+    {
+        TimeDrive d = new TimeDrive();
+        d.setDirection(Direction.RIGHT);
+        d.setVelocity(velocity);
+        d.setDuration(duration);
+        d.setRestTime(restDuration);
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @leftVelocity left motor control, -100 <= leftVelocity <= 100, reverse if leftVelocity < 0
+     * @rightVelocity right motor control, -100 <= rightVelocity <= 100, reverse if rightVelocity < 0
+     */
+    private void tycheMoveDirectly(int leftVelocity, int rightVelocity)
+    {
+        try {
+            tycheControlHelper.operate(leftVelocity, rightVelocity);
+        } catch (NotConnectedException | NotEnoughBatteryException e) {
+            e.printStackTrace();
+        }
     }
 }
