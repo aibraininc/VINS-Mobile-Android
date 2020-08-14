@@ -42,6 +42,7 @@ import android.widget.Toast;
 import com.aibrain.tyche.bluetoothle.TycheControlHelper;
 import com.aibrain.tyche.bluetoothle.constants.Direction;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
+import com.aibrain.tyche.bluetoothle.drive.ControlTimeDrive;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
 import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
 import com.aibrain.tyche.bluetoothle.drive.RotateDrive;
@@ -702,8 +703,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
 
-    private void tycheExample()
-    {
+
+    /////////////////// Tyche control //////////////////////////
+
+    private void tycheExample() {
         // tyche move forward with velocity 50 for 1000 ms
         TimeDrive d1 = new TimeDrive();
         d1.setDirection(Direction.FORWARD);
@@ -729,7 +732,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // tyche turn left with velocity 30 for 1 seconds
         TimeDrive d5 = new TimeDrive();
         d5.setDirection(Direction.LEFT);
-        d5.setVelocity(30);
+        d5.setVelocity(40);
         d5.setDuration(1000);
 
         RotateDrive left90 = new RotateDrive(Mode.ENCODER);
@@ -769,8 +772,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @centimeter backward if centimeter < 0
      * @velocity exception if velocity < 0
      */
-    private void tycheMove(int centimeter, int velocity)
-    {
+    private void tycheMove(int centimeter, int velocity) {
         tycheMove(centimeter, velocity, null);
     }
 
@@ -779,8 +781,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @velocity exception if velocity < 0
      * @listener called if moving finished
      */
-    private void tycheMove(int centimeter, int velocity, Executor.OnFinishListener listener)
-    {
+    private void tycheMove(int centimeter, int velocity, Executor.OnFinishListener listener) {
         MoveDrive d = new MoveDrive();
         d.setDistance(centimeter);
         d.setVelocity(velocity);
@@ -796,8 +797,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /*
      * @angle left if angle < 0, right if angle>0
      */
-    private void tycheTurn(int angle)
-    {
+    private void tycheTurn(int angle) {
         tycheTurn(angle, null);
     }
 
@@ -805,8 +805,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * @angle left if angle < 0, right if angle>0
      * @listener called if turning finished
      */
-    private void tycheTurn(int angle, Executor.OnFinishListener listener)
-    {
+    private void tycheTurn(int angle, Executor.OnFinishListener listener) {
         RotateDrive d = new RotateDrive(Mode.ENCODER);
         d.setAngle(angle);
         try {
@@ -826,7 +825,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     /*
-     * @velocity exception if velocity < 0
+     * @velocity
      * @duration turn left for duration milliseconds
      * @listener called if turning finished
      */
@@ -845,7 +844,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     /*
-     * @velocity exception if velocity < 0
+     * @velocity
      * @duration turn right for duration milliseconds
      */
     private void tycheTurnRight(int velocity, int duration, int restDuration)
@@ -854,7 +853,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     /*
-     * @velocity exception if velocity < 0
+     * @velocity
      * @duration turn right for duration milliseconds
      * @listener called if turning finished
      */
@@ -865,6 +864,33 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         d.setVelocity(velocity);
         d.setDuration(duration);
         d.setRestTime(restDuration);
+        try {
+            tycheControlHelper.drive(d, listener);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * @leftVelocity    -100 <= leftVelocity <= 100
+     * @rightVelocity   -100 <= rightVelocity <= 100
+     * @duration turn right for duration milliseconds
+     */
+    private void tycheControl(int leftVelocity, int rightVelocity, int duration) {
+        tycheControl(leftVelocity, rightVelocity, duration, null);
+    }
+
+    /*
+     * @leftVelocity    -100 <= leftVelocity <= 100
+     * @rightVelocity   -100 <= rightVelocity <= 100
+     * @duration turn right for duration milliseconds
+     * @listener called if turning finished
+     */
+    private void tycheControl(int leftVelocity, int rightVelocity, int duration, Executor.OnFinishListener listener) {
+        ControlTimeDrive d = new ControlTimeDrive();
+        d.setLeftVelocity(leftVelocity);
+        d.setRightVelocity(rightVelocity);
+        d.setDuration(duration);
         try {
             tycheControlHelper.drive(d, listener);
         } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
@@ -884,4 +910,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             e.printStackTrace();
         }
     }
+
+    /////////////////////////////////////////////
 }

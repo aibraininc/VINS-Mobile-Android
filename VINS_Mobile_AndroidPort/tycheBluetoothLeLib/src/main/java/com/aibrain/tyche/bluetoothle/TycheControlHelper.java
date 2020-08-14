@@ -7,6 +7,7 @@ import android.os.SystemClock;
 import com.aibrain.tyche.bluetoothle.constants.Direction;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
 import com.aibrain.tyche.bluetoothle.constants.Velocity;
+import com.aibrain.tyche.bluetoothle.drive.ControlTimeDrive;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
 import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
 import com.aibrain.tyche.bluetoothle.drive.RotateDrive;
@@ -302,6 +303,17 @@ public class TycheControlHelper extends BluetoothLeOpenHelper {
 		return manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE);
 	}
 
+	private Executor makeExecutorByControlTimeDrive(ControlTimeDrive drive) throws InvalidNumberException {
+		if(drive.getDuration() <= 0) 		throw new InvalidNumberException("Duration must be positive integer.");
+
+		int leftVel = drive.getLeftVelocity();
+		int rightVel = drive.getRightVelocity();
+
+		return mIsEnableObstacleDetector
+				?	new TimeBaseObstacleDetectingMoveExecutor(drive.getDuration(), leftVel, rightVel, mOnObstacleDetectedListener)
+				:	new TimeBaseMoveExecutor(drive.getDuration(), leftVel, rightVel);
+	}
+
 	private Executor makeExecutorByTimeDrive(TimeDrive drive) throws InvalidNumberException {
 		if(drive.getDuration() <= 0) 		throw new InvalidNumberException("Duration must be positive integer.");
 
@@ -356,6 +368,9 @@ public class TycheControlHelper extends BluetoothLeOpenHelper {
 		if(drive.getRestTime() <= 0) throw new InvalidNumberException("Rest time must be positive integer.");
 
 		Executor executor = null;
+		if(drive instanceof ControlTimeDrive) {
+			executor = makeExecutorByControlTimeDrive((ControlTimeDrive)drive);
+		}
 		if (drive instanceof TimeDrive) {
 			executor = makeExecutorByTimeDrive((TimeDrive)drive);
 		}
