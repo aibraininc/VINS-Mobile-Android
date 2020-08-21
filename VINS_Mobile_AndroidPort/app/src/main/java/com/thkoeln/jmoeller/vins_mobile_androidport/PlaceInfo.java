@@ -30,4 +30,15 @@ public class PlaceInfo {
         float distance = (x-_x)*(x-_x) + (y-_y)*(y-_y) + (z-_z)*(z-_z);
         return (float) Math.sqrt(distance);
     }
+
+    float calculateAngle() {
+        return (float) Math.atan(y/x);
+    }
+
+    float calculateAngle(float _x, float _y) {
+        double angle1 = Math.atan(_y/_x);
+        double angle2 = Math.atan(y/x);
+
+        return (float) (180.0* (angle1 - angle2)/3.141592);
+    }
 }

@@ -974,6 +974,13 @@ void DrawResult::Reprojection(cv::Mat &result, vector<Vector3f> &point_cloud, co
         
         pts_pre = pts;
     }
+
+    cv::Point2f marker;
+    Vector3f marker_point;
+    marker_point << 0, 0, 0;
+    marker = World2VirturCam(marker_point, depth_marker);
+    cv::putText(result, "Hello", marker, 0, 0.5, cvScalar(100,100,100));
+
     //draw frame arrow
     {
         Vector3f p1, p2;

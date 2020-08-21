@@ -132,9 +132,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
     void addPlace(String name, float x, float y, float z){
-        int length = placeInfos.size();
-        PlaceInfo place = new PlaceInfo(length,name,x,y,z);
-        placeInfos.add(place);
+        String[] name_array = name.split("여기는 ");
+        if(name_array.length >1) {
+            int length = placeInfos.size();
+            PlaceInfo place = new PlaceInfo(length,name_array[1],x,y,z);
+            placeInfos.add(place);
+        }
     }
 
     void updatePlace(int id, float x, float y, float z) {
@@ -628,6 +631,23 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    public float calculateAngle(float x, float y) {
+        float angle_2 = (float) (180*Math.atan(y/x)/3.141592);
+        if(x>0 && y>0) {
+            angle_2 = 90+angle_2;
+        }
+        else if(x<0 && y>0) {
+            angle_2 = -90+angle_2;
+        }
+        else if(x>0 && y<0){
+            angle_2 = -1*angle_2;
+        }
+        else if(x<0 && y<0){
+            angle_2 = -1*angle_2;
+        }
+        return angle_2;
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -681,10 +701,49 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 //                Toast.makeText(getApplicationContext(), "등록", Toast.LENGTH_LONG).show();
             }
 
+            else if(matches_text.get(0).contains("각도 계산")) {
+                // float angle_delta = placeInfos.get(0).calculateAngle(robotPosition[0], robotPosition[1]);
+
+                // goal position
+                float angle_1 = calculateAngle(placeInfos.get(0).x,placeInfos.get(0).y);
+
+                // robot position
+                float angle_2 = calculateAngle(robotPosition[0],robotPosition[1]);
+
+
+                float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
+                float angle_yaw = (float)(-180* robotPosition[3] / 3.141592);
+
+
+                Toast.makeText(getApplicationContext(), angle_1+","+angle_2+","+angle_yaw + ", "+ (angle_for_rotation - angle_yaw), Toast.LENGTH_LONG).show();
+            }
+
+            else if(matches_text.get(0).contains("이동")) {
+                // float angle_delta = placeInfos.get(0).calculateAngle(robotPosition[0], robotPosition[1]);
+                // goal position
+                float angle_1 = calculateAngle(placeInfos.get(0).x,placeInfos.get(0).y);
+
+                // robot position
+                float angle_2 = calculateAngle(robotPosition[0],robotPosition[1]);
+
+
+                float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
+                float angle_yaw = (float)(-180* robotPosition[3] / 3.141592);
+
+                float rotation = angle_for_rotation - angle_yaw;
+                Toast.makeText(getApplicationContext(), angle_1+","+angle_2+","+angle_yaw + ", "+ (angle_for_rotation - angle_yaw), Toast.LENGTH_LONG).show();
+                if(rotation>0) {
+                    this.tycheTurnLeft(60,4000,1000);
+                }
+                else {
+                    this.tycheTurnRight(60,4000,1000);
+                }
+            }
+
             else if(matches_text.get(0).contains("어디야")){
-                this.tycheTurnLeft(60,4000,300);
-                this.tycheTurnRight(60,8000,300);
-                this.tycheTurnLeft(60,4000,300);
+//                this.tycheTurnLeft(50,4000,300);
+//                this.tycheTurnRight(50,8000,300);
+//                this.tycheTurnLeft(50,4000,300);
 
                 String test = this.searchPlace(robotPosition[0], robotPosition[1], robotPosition[2]).name;
                 Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();

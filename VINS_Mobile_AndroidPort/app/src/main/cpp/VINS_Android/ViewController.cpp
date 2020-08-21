@@ -1242,7 +1242,7 @@ void ViewController::showInputView() {
         tvXText = oss.str();
         oss.str(""); oss.clear();
     
-        oss << "TOTAL: "<< total_odom; // stringView =[NSString stringWithFormat:@"TOTAL:%.2f", total_odom];
+        oss << "Theta: "<< (float)(180* yaw_view / 3.141592);; // stringView =[NSString stringWithFormat:@"TOTAL:%.2f", total_odom];
         // stringView = [NSString stringWithFormat:@"COST:%.2lf",vins.final_cost];
         // stringView = [NSString stringWithFormat:@"COST: %d, %.2lf",vins.visual_factor_num, vins.visual_cost];
 //        env->CallVoidMethod(tvTotal, setTextMethod, env->NewStringUTF(oss.str().c_str())); // [_total_odom_label setText:stringView];
