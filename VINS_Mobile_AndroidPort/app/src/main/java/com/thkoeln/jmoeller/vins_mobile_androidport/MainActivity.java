@@ -712,9 +712,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
                 float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
-                float angle_yaw = (float)(-180* robotPosition[3] / 3.141592);
-
-
+                float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
                 Toast.makeText(getApplicationContext(), angle_1+","+angle_2+","+angle_yaw + ", "+ (angle_for_rotation - angle_yaw), Toast.LENGTH_LONG).show();
             }
 
@@ -728,15 +726,20 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
                 float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
-                float angle_yaw = (float)(-180* robotPosition[3] / 3.141592);
+                float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
 
                 float rotation = angle_for_rotation - angle_yaw;
-                Toast.makeText(getApplicationContext(), angle_1+","+angle_2+","+angle_yaw + ", "+ (angle_for_rotation - angle_yaw), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), angle_1+","+","+angle_yaw + ", "+ (rotation), Toast.LENGTH_LONG).show();
+
+                if(Math.abs(rotation) < 30) {
+                    this.tycheMove(50,30);
+                    return;
+                }
                 if(rotation>0) {
-                    this.tycheTurnLeft(60,4000,1000);
+                    this.tycheTurnLeft(55,500,1000);
                 }
                 else {
-                    this.tycheTurnRight(60,4000,1000);
+                    this.tycheTurnRight(55,500,1000);
                 }
             }
 
