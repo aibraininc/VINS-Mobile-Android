@@ -1219,8 +1219,14 @@ void ViewController::showInputView() {
         float x_view = (float)vins.correct_Ps[frame_cnt][0];
         float y_view = (float)vins.correct_Ps[frame_cnt][1];
         float z_view = (float)vins.correct_Ps[frame_cnt][2];
+
+//        vins.correct_Rs[frame_cnt];
+//        yaw_view =
+//            atan2((float)vins.correct_Rs[0](1,0),(float)vins.correct_Rs[0](0,0) );
+
+
         yaw_view =
-            atan2((float)vins.correct_Rs[frame_cnt](1,0),(float)vins.correct_Rs[frame_cnt](0,0) );
+            atan2((float)vins.correct_Rs[WINDOW_SIZE-1](1,0),(float)vins.correct_Rs[WINDOW_SIZE-1](0,0) );
 
 
 

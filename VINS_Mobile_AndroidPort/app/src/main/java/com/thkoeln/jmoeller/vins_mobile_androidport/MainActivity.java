@@ -18,6 +18,7 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Message;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -129,6 +130,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     ArrayList<PlaceInfo> placeInfos;
     public TextToSpeech tts;
     public static float[] robotPosition;
+
+
+    // handler for movement
+    private final Handler movementHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            movement(msg.what);
+        }
+    } ;
 
 
     void addPlace(String name, float x, float y, float z){
@@ -717,30 +727,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
 
             else if(matches_text.get(0).contains("이동")) {
-                // float angle_delta = placeInfos.get(0).calculateAngle(robotPosition[0], robotPosition[1]);
-                // goal position
-                float angle_1 = calculateAngle(placeInfos.get(0).x,placeInfos.get(0).y);
-
-                // robot position
-                float angle_2 = calculateAngle(robotPosition[0],robotPosition[1]);
-
-
-                float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
-                float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
-
-                float rotation = angle_for_rotation - angle_yaw;
-                Toast.makeText(getApplicationContext(), angle_1+","+","+angle_yaw + ", "+ (rotation), Toast.LENGTH_LONG).show();
-
-                if(Math.abs(rotation) < 30) {
-                    this.tycheMove(50,30);
-                    return;
-                }
-                if(rotation>0) {
-                    this.tycheTurnLeft(55,500,1000);
-                }
-                else {
-                    this.tycheTurnRight(55,500,1000);
-                }
+                this.movement(10);
             }
 
             else if(matches_text.get(0).contains("어디야")){
@@ -762,6 +749,33 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    public void movement(int num) {
+        float angle_1 = calculateAngle(placeInfos.get(0).x,placeInfos.get(0).y);
+        float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
+        float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
+
+        float rotation = angle_for_rotation - angle_yaw;
+        Toast.makeText(getApplicationContext(), angle_1+","+","+angle_yaw + ", "+ (rotation), Toast.LENGTH_LONG).show();
+
+        if(Math.abs(rotation) < 30) {
+            this.tycheMove(30,30);
+//            return;
+        }
+        if(rotation>0) {
+            this.tycheTurnLeft(45,500,1000);
+        }
+        else {
+            this.tycheTurnRight(45,500,1000);
+        }
+        num--;
+        if(num > 0) {
+            Message message = handler.obtainMessage() ;
+            message.what = num;
+            movementHandler.sendMessageDelayed(message,3000) ;
+        }
     }
 
 
