@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private final Handler movementHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            movement(msg.what);
+         movement(msg.what, msg.arg1);
         }
     } ;
 
@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         String[] name_array = name.split("여기는 ");
         if(name_array.length >1) {
             int length = placeInfos.size();
+            Toast.makeText(getApplicationContext(), name_array[1], Toast.LENGTH_LONG).show();
             PlaceInfo place = new PlaceInfo(length,name_array[1],x,y,z);
             placeInfos.add(place);
         }
@@ -162,6 +163,20 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             placeInfos.get(idx).z = z;
         }
     }
+
+    int searchPlaceByName(String text){
+        if(placeInfos.size() == 0)
+            return -1;
+        int idx = 0;
+        for(int i =0; i< placeInfos.size();i++) {
+
+            if(text.contains(placeInfos.get(i).name) ) {
+                idx = i;
+            }
+        }
+        return idx;
+    }
+
 
     PlaceInfo searchPlace(float x, float y, float z){
         if(placeInfos.size() == 0)
@@ -650,10 +665,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             angle_2 = -90+angle_2;
         }
         else if(x>0 && y<0){
-            angle_2 = -1*angle_2;
+            angle_2 = 90 + angle_2;
         }
         else if(x<0 && y<0){
-            angle_2 = -1*angle_2;
+            angle_2 = -1* ( 90 - angle_2);
         }
         return angle_2;
     }
@@ -727,7 +742,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
 
             else if(matches_text.get(0).contains("이동")) {
-                this.movement(10);
+                // search text
+                int idx= this.searchPlaceByName(matches_text.get(0));
+                this.movement(10, idx);
             }
 
             else if(matches_text.get(0).contains("어디야")){
@@ -752,9 +769,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
 
-    public void movement(int num) {
-        float angle_1 = calculateAngle(placeInfos.get(0).x,placeInfos.get(0).y);
-        float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
+    public void movement(int num, int thePlaceIdx) {
+        PlaceInfo thePlace = placeInfos.get(thePlaceIdx);
+        Toast.makeText(getApplicationContext(), thePlace.name+",이동", Toast.LENGTH_LONG).show();
+        float angle_1 = calculateAngle(thePlace.x,thePlace.y);
+        float angle_for_rotation = calculateAngle(thePlace.x - robotPosition[0], thePlace.y- robotPosition[1]);
         float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
 
         float rotation = angle_for_rotation - angle_yaw;
@@ -774,6 +793,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         if(num > 0) {
             Message message = handler.obtainMessage() ;
             message.what = num;
+            message.arg1 = thePlaceIdx;
             movementHandler.sendMessageDelayed(message,3000) ;
         }
     }
