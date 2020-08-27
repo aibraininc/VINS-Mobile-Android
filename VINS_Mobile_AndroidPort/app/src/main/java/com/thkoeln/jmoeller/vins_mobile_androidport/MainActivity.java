@@ -43,6 +43,7 @@ import android.widget.Toast;
 import com.aibrain.tyche.bluetoothle.TycheControlHelper;
 import com.aibrain.tyche.bluetoothle.constants.Direction;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
+import com.aibrain.tyche.bluetoothle.constants.Velocity;
 import com.aibrain.tyche.bluetoothle.drive.ControlTimeDrive;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
 import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
@@ -60,6 +61,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * {@link MainActivity} only activity
@@ -716,10 +718,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             else if(matches_text.get(0).contains("멈춰")){
 //                this.tycheLookAround();
-                this.tycheMoveDirectly(0,0);
-
+//                this.tycheMoveDirectly(0,0);
+                this.tycheStop();
             }
-
+            else if(matches_text.get(0).contains("탐사")){
+                this.tycheMoveAround();
+            }
 
             else if(matches_text.get(0).contains("여기는")){
                 this.addPlace(matches_text.get(0), robotPosition[0],robotPosition[1],robotPosition[2]);
@@ -798,6 +802,61 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+
+
+    public void tycheStop() {
+        tycheControlHelper.skipAllDrives();
+    }
+
+    public void tycheMoveAround() {
+        TimeDrive forward = new TimeDrive();
+        forward.setDirection(Direction.FORWARD);
+        forward.setDuration(1000);
+        forward.setVelocity(20);
+        forward.setRestTime(500);
+        TimeDrive left = new TimeDrive();
+        left.setDirection(Direction.LEFT);
+        left.setVelocity(35);
+        left.setDuration(1000);
+        left.setRestTime(500);
+        TimeDrive right = new TimeDrive();
+        right.setDirection(Direction.LEFT);
+        right.setVelocity(35);
+        right.setDuration(1000);
+        right.setRestTime(500);
+        TimeDrive backward = new TimeDrive();
+        backward.setDirection(Direction.BACKWARD);
+        backward.setVelocity(20);
+        backward.setDuration(1000);
+        backward.setRestTime(500);
+        ArrayList<Drive> path = new ArrayList();
+        Random random = new Random();
+        for(int i=0; i<20; i++)
+        {
+            int rand = random.nextInt(4);
+            switch (rand) {
+                case 0: path.add(forward);
+                    break;
+                case 1: path.add(left);
+                    break;
+                case 2: path.add(right);
+                    break;
+                case 3: path.add(backward);
+                    break;
+            }
+        }
+        try {
+            tycheControlHelper.drive(path);
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
+        } catch (NotEnoughBatteryException e) {
+            e.printStackTrace();
+        } catch (InvalidNumberException e) {
+            e.printStackTrace();
+        } catch (NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     /////////////////// Tyche control //////////////////////////
