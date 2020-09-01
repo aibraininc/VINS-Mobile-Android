@@ -31,6 +31,13 @@ public class PlaceInfo {
         return (float) Math.sqrt(distance);
     }
 
+    float calculateDistance2D(float _x, float _y) {
+        float distance = (x-_x)*(x-_x) + (y-_y)*(y-_y);
+        return (float) Math.sqrt(distance);
+    }
+
+
+
     float calculateAngle() {
         return (float) Math.atan(y/x);
     }

@@ -685,11 +685,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             Log.v("onActivityResult", matches_text.get(0));
             Toast.makeText(getApplicationContext(), matches_text.get(0), Toast.LENGTH_LONG).show();
 
-            if(matches_text.get(0).contains("시작")){
-                vinsJNI.onRestartSLAM();
-                isSLAM = true;
-            }
-            else if(matches_text.get(0).contains("그만")){
+//            if(matches_text.get(0).contains("시작")){
+//                vinsJNI.onRestartSLAM();
+//                isSLAM = true;
+//            }
+            if(matches_text.get(0).contains("그만")){
                 vinsJNI.onStopSLAM();
                 isSLAM = false;
             }
@@ -775,23 +775,29 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     public void movement(int num, int thePlaceIdx) {
         PlaceInfo thePlace = placeInfos.get(thePlaceIdx);
-        Toast.makeText(getApplicationContext(), thePlace.name+",이동", Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), thePlace.name+",이동", Toast.LENGTH_LONG).show();
         float angle_1 = calculateAngle(thePlace.x,thePlace.y);
         float angle_for_rotation = calculateAngle(thePlace.x - robotPosition[0], thePlace.y- robotPosition[1]);
         float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
 
+
+        float distance = thePlace.calculateDistance2D(robotPosition[0],robotPosition[1]);
         float rotation = angle_for_rotation - angle_yaw;
-        Toast.makeText(getApplicationContext(), angle_1+","+","+angle_yaw + ", "+ (rotation), Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), angle_1+","+","+angle_yaw + ", "+ (rotation), Toast.LENGTH_LONG).show();
+
+        if(distance < 0.5) //50cm 이내
+        {
+            return;
+        }
 
         if(Math.abs(rotation) < 30) {
             this.tycheMove(30,30);
-//            return;
         }
         if(rotation>0) {
-            this.tycheTurnLeft(45,500,1000);
+            this.tycheTurnLeft(45,500,500);
         }
         else {
-            this.tycheTurnRight(45,500,1000);
+            this.tycheTurnRight(45,500,500);
         }
         num--;
         if(num > 0) {
@@ -811,7 +817,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public void tycheMoveAround() {
         TimeDrive forward = new TimeDrive();
         forward.setDirection(Direction.FORWARD);
-        forward.setDuration(1000);
+        forward.setDuration(2000);
         forward.setVelocity(20);
         forward.setRestTime(500);
         TimeDrive left = new TimeDrive();
@@ -827,7 +833,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         TimeDrive backward = new TimeDrive();
         backward.setDirection(Direction.BACKWARD);
         backward.setVelocity(20);
-        backward.setDuration(1000);
+        backward.setDuration(2000);
         backward.setRestTime(500);
         ArrayList<Drive> path = new ArrayList();
         Random random = new Random();
