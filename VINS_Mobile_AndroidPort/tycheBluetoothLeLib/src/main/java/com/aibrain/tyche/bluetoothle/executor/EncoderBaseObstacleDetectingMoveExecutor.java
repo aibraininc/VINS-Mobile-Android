@@ -29,7 +29,7 @@ public class EncoderBaseObstacleDetectingMoveExecutor extends EncoderBaseMoveExe
                 int rightVel = status.getRightWheelVelocity();
                 if(leftVel>0 && rightVel>0) {
                     int distance = status.getDistance();
-                    if(distance>0 && distance < Math.max(leftVel, rightVel)/3) {
+                    if(distance>0 && distance < /*Math.max(leftVel, rightVel)/3*/20) {
                         if(mOnObstacleDetectedListener != null) {
                             mOnObstacleDetectedListener.onDetected();
                         }

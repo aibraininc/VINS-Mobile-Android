@@ -43,7 +43,6 @@ import android.widget.Toast;
 import com.aibrain.tyche.bluetoothle.TycheControlHelper;
 import com.aibrain.tyche.bluetoothle.constants.Direction;
 import com.aibrain.tyche.bluetoothle.constants.Mode;
-import com.aibrain.tyche.bluetoothle.constants.Velocity;
 import com.aibrain.tyche.bluetoothle.drive.ControlTimeDrive;
 import com.aibrain.tyche.bluetoothle.drive.Drive;
 import com.aibrain.tyche.bluetoothle.drive.MoveDrive;
@@ -55,12 +54,10 @@ import com.aibrain.tyche.bluetoothle.exception.NotEnoughBatteryException;
 import com.aibrain.tyche.bluetoothle.exception.NotSupportSensorException;
 import com.aibrain.tyche.bluetoothle.executor.Executor;
 import com.aibrain.tyche.bluetoothle.packet.receive.StatusData;
-import com.google.android.gms.location.places.Place;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -722,7 +719,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 this.tycheStop();
             }
             else if(matches_text.get(0).contains("탐사")){
-                this.tycheMoveAround();
+                this.tycheMoveAround1();
             }
 
             else if(matches_text.get(0).contains("여기는")){
@@ -814,32 +811,117 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         tycheControlHelper.skipAllDrives();
     }
 
-    public void tycheMoveAround() {
-        TimeDrive forward = new TimeDrive();
-        forward.setDirection(Direction.FORWARD);
-        forward.setDuration(2000);
-        forward.setVelocity(20);
-        forward.setRestTime(500);
+
+    public void tycheInitMotion() {
+        // init motion
         TimeDrive left = new TimeDrive();
         left.setDirection(Direction.LEFT);
         left.setVelocity(35);
-        left.setDuration(1000);
+        left.setDuration(2000);
         left.setRestTime(500);
+
         TimeDrive right = new TimeDrive();
-        right.setDirection(Direction.LEFT);
+        right.setDirection(Direction.RIGHT);
         right.setVelocity(35);
-        right.setDuration(1000);
+        right.setDuration(2000);
         right.setRestTime(500);
+
+        TimeDrive forward = new TimeDrive();
+        forward.setDirection(Direction.FORWARD);
+        forward.setVelocity(35);
+        forward.setDuration(300);
+        forward.setRestTime(500);
+
         TimeDrive backward = new TimeDrive();
         backward.setDirection(Direction.BACKWARD);
-        backward.setVelocity(20);
-        backward.setDuration(2000);
+        backward.setVelocity(35);
+        backward.setDuration(300);
         backward.setRestTime(500);
+
+
         ArrayList<Drive> path = new ArrayList();
         Random random = new Random();
-        for(int i=0; i<20; i++)
-        {
-            int rand = random.nextInt(4);
+        path.add(backward);
+
+        for(int i=0; i<1; i++) {
+            path.add(left);
+            path.add(right);
+            path.add(right);
+            path.add(left);
+            path.add(left);
+            path.add(right);
+            int rand = random.nextInt(2);
+            if(rand==0) path.add(forward);
+            else path.add(backward);
+        }
+
+        try {
+            tycheControlHelper.drive(path);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void tycheMoveAround() {
+//        tycheInitMotion();
+
+        final int DURATION = 2000;
+        final int TURN_SPEED = 30;
+        final int SPEED = 20;
+        final int ONE_SPEED = 40;
+
+        TimeDrive forward = new TimeDrive();
+        forward.setDirection(Direction.FORWARD);
+        forward.setDuration(DURATION);
+        forward.setVelocity(SPEED);
+        forward.setRestTime(500);
+
+        TimeDrive left = new TimeDrive();
+        left.setDirection(Direction.LEFT);
+        left.setVelocity(TURN_SPEED);
+        left.setDuration(DURATION);
+        left.setRestTime(500);
+
+        TimeDrive right = new TimeDrive();
+        right.setDirection(Direction.RIGHT);
+        right.setVelocity(TURN_SPEED);
+        right.setDuration(DURATION);
+        right.setRestTime(500);
+
+        TimeDrive backward = new TimeDrive();
+        backward.setDirection(Direction.BACKWARD);
+        backward.setVelocity(SPEED);
+        backward.setDuration(DURATION);
+        backward.setRestTime(500);
+
+        ControlTimeDrive leftForward = new ControlTimeDrive();
+        leftForward.setLeftVelocity(ONE_SPEED);
+        leftForward.setDuration(DURATION);
+        leftForward.setRestTime(500);
+
+        ControlTimeDrive rightForward = new ControlTimeDrive();
+        rightForward.setRightVelocity(ONE_SPEED);
+        rightForward.setDuration(DURATION);
+        rightForward.setRestTime(500);
+
+        ControlTimeDrive leftBackward = new ControlTimeDrive();
+        leftBackward.setLeftVelocity(-ONE_SPEED);
+        leftBackward.setDuration(DURATION);
+        leftBackward.setRestTime(500);
+
+        ControlTimeDrive rightBackward = new ControlTimeDrive();
+        rightBackward.setRightVelocity(-ONE_SPEED);
+        rightBackward.setDuration(DURATION);
+        rightBackward.setRestTime(500);
+
+
+        ArrayList<Drive> path = new ArrayList();
+
+
+        Random random = new Random();
+        // random motion
+        for(int i=0; i<20; i++) {
+            int rand = random.nextInt(8);
             switch (rand) {
                 case 0: path.add(forward);
                     break;
@@ -849,21 +931,61 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     break;
                 case 3: path.add(backward);
                     break;
+                case 4: path.add(leftForward);
+                    break;
+                case 5: path.add(rightForward);
+                    break;
+                case 6: path.add(leftBackward);
+                    break;
+                case 7: path.add(rightBackward);
+                    break;
             }
         }
         try {
             tycheControlHelper.drive(path);
-        } catch (NotConnectedException e) {
-            e.printStackTrace();
-        } catch (NotEnoughBatteryException e) {
-            e.printStackTrace();
-        } catch (InvalidNumberException e) {
-            e.printStackTrace();
-        } catch (NotSupportSensorException e) {
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
             e.printStackTrace();
         }
     }
 
+    public void tycheMoveAround1() {
+//        tycheInitMotion();
+
+        TimeDrive backward = new TimeDrive();
+        backward.setDirection(Direction.BACKWARD);
+        backward.setVelocity(25);
+        backward.setDuration(500);
+
+        RotateDrive turnLeft = new RotateDrive(Mode.ENCODER);
+        turnLeft.setAngle(90);
+
+        final TimeDrive forward = new TimeDrive();
+        forward.setDirection(Direction.FORWARD);
+        forward.setVelocity(25);
+        forward.setDuration(20000);
+
+        ArrayList<Drive> path = new ArrayList();
+        path.add(backward);
+        path.add(turnLeft);
+
+        tycheControlHelper.enableObstacleDetector(true);
+        tycheControlHelper.setObstacleDetectedDrives(path, new Executor.OnFinishListener() {
+            @Override
+            public void onFinish(boolean isCanceled) {
+                try {
+                    tycheControlHelper.drive(forward);
+                } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        try {
+            tycheControlHelper.drive(forward);
+        } catch (NotConnectedException | NotEnoughBatteryException | InvalidNumberException | NotSupportSensorException e) {
+            e.printStackTrace();
+        }
+    }
 
     /////////////////// Tyche control //////////////////////////
 
