@@ -126,10 +126,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private final float minVirtualCamDistance = 2;
     private final float maxVirtualCamDistance = 40;
 
-    ArrayList<PlaceInfo> placeInfos;
     public TextToSpeech tts;
     public static float[] robotPosition;
-
+    NavigationHelper navigationHelper;
 
     // handler for movement
     private final Handler movementHandler = new Handler() {
@@ -138,59 +137,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
          movement(msg.what, msg.arg1);
         }
     } ;
-
-
-    void addPlace(String name, float x, float y, float z){
-        String[] name_array = name.split("여기는 ");
-        if(name_array.length >1) {
-            int length = placeInfos.size();
-            Toast.makeText(getApplicationContext(), name_array[1], Toast.LENGTH_LONG).show();
-            PlaceInfo place = new PlaceInfo(length,name_array[1],x,y,z);
-            placeInfos.add(place);
-        }
-    }
-
-    void updatePlace(int id, float x, float y, float z) {
-        int idx = -1;
-        for(int i =0; i< placeInfos.size();i++) {
-            if(id == placeInfos.get(i).id)
-                idx = i;
-        }
-        if(idx != -1) {
-            placeInfos.get(idx).x = x;
-            placeInfos.get(idx).y = y;
-            placeInfos.get(idx).z = z;
-        }
-    }
-
-    int searchPlaceByName(String text){
-        if(placeInfos.size() == 0)
-            return -1;
-        int idx = 0;
-        for(int i =0; i< placeInfos.size();i++) {
-
-            if(text.contains(placeInfos.get(i).name) ) {
-                idx = i;
-            }
-        }
-        return idx;
-    }
-
-
-    PlaceInfo searchPlace(float x, float y, float z){
-        if(placeInfos.size() == 0)
-            return new PlaceInfo();
-        int idx = 0;
-        float minDistance = 100;
-        for(int i =0; i< placeInfos.size();i++) {
-            float distance = placeInfos.get(i).calculateDistance(x,y,z);
-            if(distance < minDistance) {
-                minDistance = distance;
-                idx = i;
-            }
-        }
-        return placeInfos.get(idx);
-    }
 
     // Tyche control instance
     private TycheControlHelper tycheControlHelper = new TycheControlHelper(this, new TycheControlHelper.OnChangeStatusListener() {
@@ -236,13 +182,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         initViews();
         isSLAM = true;
 
+
         // tyche open
         tycheControlHelper.open();
-        placeInfos = new ArrayList<PlaceInfo>();
         tts = new TextToSpeech(MainActivity.this, this);
 
         // enable obstacle detecting mode. Default is moving backward when Tyche meets obstacles.
         tycheControlHelper.enableObstacleDetector(true);
+
+        // 네비게이션 헬퍼 객체 생성
+        navigationHelper = new NavigationHelper();
     }
 
     @Override
@@ -551,24 +500,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             runOnUiThread(new Runnable() {
                 public void run() {
                     VinsJNI.updateViewInfo(tvX, tvY, tvZ, tvTotal, tvLoop, tvFeature, tvBuf, ivInit);
-
-//                    String[] position = new String[3];
-//                    if(tvX.getText().toString().split("X: ").length == 2){
-//                        position[0] = tvX.getText().toString().split("X: ")[1];
-//                    }
-//                    if(tvY.getText().toString().split("Y: ").length == 2){
-//                        position[1] = tvY.getText().toString().split("Y: ")[1];
-//                    }
-//                    if(tvZ.getText().toString().split("Z: ").length == 2){
-//                        position[2] = tvZ.getText().toString().split("Z: ")[1];
-//                    }
-
-                    // Get position from Vins
+                    // Get position from Vins and store the position to global variable "robotPosition"
                     robotPosition = VinsJNI.getPosition();
-//                    Log.e(TAG, "runOnUiThread X: " + position[0]);
-//                    Log.e(TAG, "runOnUiThread Y: " + position[1]);
-//                    Log.e(TAG, "runOnUiThread Z: " + position[2]);
-                    Log.e(TAG, "runOnUiThread Yaw: " + robotPosition[3]);
                 }
             });
 
@@ -655,23 +588,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
-    public float calculateAngle(float x, float y) {
-        float angle_2 = (float) (180*Math.atan(y/x)/3.141592);
-        if(x>0 && y>0) {
-            angle_2 = 90+angle_2;
-        }
-        else if(x<0 && y>0) {
-            angle_2 = -90+angle_2;
-        }
-        else if(x>0 && y<0){
-            angle_2 = 90 + angle_2;
-        }
-        else if(x<0 && y<0){
-            angle_2 = -1* ( 90 - angle_2);
-        }
-        return angle_2;
-    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -679,124 +595,129 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             ArrayList<String> matches_text;
             matches_text = data
                     .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            Log.v("onActivityResult", matches_text.get(0));
+
+            // 음성인식한 텍스트를 출력한다.
             Toast.makeText(getApplicationContext(), matches_text.get(0), Toast.LENGTH_LONG).show();
 
 //            if(matches_text.get(0).contains("시작")){
 //                vinsJNI.onRestartSLAM();
 //                isSLAM = true;
 //            }
+
+            // 타이키 slam을 멈춘다.
             if(matches_text.get(0).contains("그만")){
                 vinsJNI.onStopSLAM();
                 isSLAM = false;
             }
+
+            // 앞으로 이동한다.
             else if(matches_text.get(0).contains("앞으로")){
-//                this.tycheForward();
                 this.tycheMove(50,30);
             }
+
+            // 뒤로 이동한다.
             else if(matches_text.get(0).contains("뒤로")){
                 this.tycheMove(-50,30);
             }
+
+            // 왼쪽으로 이동한다.
             else if(matches_text.get(0).contains("왼쪽")){
-//                this.tycheLookAround();
                 this.tycheTurnLeft(60,4000,1000);
             }
+
+            // 오른쪽으로 이동한다.
             else if(matches_text.get(0).contains("오른쪽")){
-//                this.tycheLookAround();
                 this.tycheTurnRight(60,4000,1000);
             }
+
+            // 회전한다.
             else if(matches_text.get(0).contains("회전")){
-//                this.tycheLookAround();
                 this.tycheTurnLeft(60,4000,300);
                 this.tycheTurnRight(60,8000,300);
                 this.tycheTurnLeft(60,4000,300);
-//                this.tycheMoveDirectly(40,-40);
             }
 
+
+            // 움직이던 타이키를 멈춘다.
             else if(matches_text.get(0).contains("멈춰")){
-//                this.tycheLookAround();
-//                this.tycheMoveDirectly(0,0);
                 this.tycheStop();
             }
+
+            // 탐사 동작을 수행한다. 장애물을 보면 90도 회전한다.
             else if(matches_text.get(0).contains("탐사")){
                 this.tycheMoveAround1();
             }
 
+            // 장소를 저장한다.
             else if(matches_text.get(0).contains("여기는")){
-                this.addPlace(matches_text.get(0), robotPosition[0],robotPosition[1],robotPosition[2]);
-//                Toast.makeText(getApplicationContext(), "등록", Toast.LENGTH_LONG).show();
+                navigationHelper.addPlace(matches_text.get(0), robotPosition[0],robotPosition[1],robotPosition[2]);
             }
 
+            // 0번 목적지까지의 각도를 계산한다. 각도가 잘 계산되는지 확인하기 위해 사용한다.
             else if(matches_text.get(0).contains("각도 계산")) {
-                // float angle_delta = placeInfos.get(0).calculateAngle(robotPosition[0], robotPosition[1]);
-
                 // goal position
-                float angle_1 = calculateAngle(placeInfos.get(0).x,placeInfos.get(0).y);
+                float angle_1 = navigationHelper.calculateAngle(navigationHelper.placeInfos.get(0).x,navigationHelper.placeInfos.get(0).y);
 
                 // robot position
-                float angle_2 = calculateAngle(robotPosition[0],robotPosition[1]);
+                float angle_2 = navigationHelper.calculateAngle(robotPosition[0],robotPosition[1]);
 
 
-                float angle_for_rotation = calculateAngle(placeInfos.get(0).x - robotPosition[0], placeInfos.get(0).y- robotPosition[1]);
+                float angle_for_rotation = navigationHelper.calculateAngle(navigationHelper.placeInfos.get(0).x - robotPosition[0], navigationHelper.placeInfos.get(0).y- robotPosition[1]);
                 float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
                 Toast.makeText(getApplicationContext(), angle_1+","+angle_2+","+angle_yaw + ", "+ (angle_for_rotation - angle_yaw), Toast.LENGTH_LONG).show();
             }
 
+            // 목적이로 이동한다.
+            // ex) 미팅룸으로 "이동"
             else if(matches_text.get(0).contains("이동")) {
                 // search text
-                int idx= this.searchPlaceByName(matches_text.get(0));
+                int idx= navigationHelper.searchPlaceByName(matches_text.get(0));
                 this.movement(10, idx);
             }
 
+            // 어디야라고 말하면, 제일 가까운 위치를 말해준다.
             else if(matches_text.get(0).contains("어디야")){
-//                this.tycheTurnLeft(50,4000,300);
-//                this.tycheTurnRight(50,8000,300);
-//                this.tycheTurnLeft(50,4000,300);
-
-                String test = this.searchPlace(robotPosition[0], robotPosition[1], robotPosition[2]).name;
+                String test = navigationHelper.searchPlace(robotPosition[0], robotPosition[1], robotPosition[2]).name;
                 Toast.makeText(getApplicationContext(), test, Toast.LENGTH_LONG).show();
+
+                // 음성출력한다.
                 this.speakJust(test);
             }
-
-
-            else if(matches_text.get(0).contains("테스트")){
-                speakJust("테스트");
-            }
-
-
         }
 
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-
     public void movement(int num, int thePlaceIdx) {
-        PlaceInfo thePlace = placeInfos.get(thePlaceIdx);
-//        Toast.makeText(getApplicationContext(), thePlace.name+",이동", Toast.LENGTH_LONG).show();
-        float angle_1 = calculateAngle(thePlace.x,thePlace.y);
-        float angle_for_rotation = calculateAngle(thePlace.x - robotPosition[0], thePlace.y- robotPosition[1]);
+        PlaceInfo thePlace = navigationHelper.placeInfos.get(thePlaceIdx);
+        float angle_1 = navigationHelper.calculateAngle(thePlace.x,thePlace.y);
+        float angle_for_rotation = navigationHelper.calculateAngle(thePlace.x - robotPosition[0], thePlace.y- robotPosition[1]);
         float angle_yaw = (float)(180* robotPosition[3] / 3.141592);
 
 
         float distance = thePlace.calculateDistance2D(robotPosition[0],robotPosition[1]);
         float rotation = angle_for_rotation - angle_yaw;
-//        Toast.makeText(getApplicationContext(), angle_1+","+","+angle_yaw + ", "+ (rotation), Toast.LENGTH_LONG).show();
 
-        if(distance < 0.5) //50cm 이내
+        if(distance < 0.5) // 50cm 이내 들어오면 이동을 멈춘다.
         {
             return;
         }
 
-        if(Math.abs(rotation) < 30) {
+        if(Math.abs(rotation) < 30) // 각도가 30도 이내일 경우, 전진한다.
+        {
             this.tycheMove(30,30);
         }
-        if(rotation>0) {
+        if(rotation>0) // 각도가 양수일 경우, 왼쪽으로 회전한다.
+        {
             this.tycheTurnLeft(45,500,500);
         }
-        else {
+        else // 각도가 음수일 경우, 오른쪽으로 회전한다.
+        {
             this.tycheTurnRight(45,500,500);
         }
         num--;
+
+        // num이 0이되면 움직이지 않는다.
         if(num > 0) {
             Message message = handler.obtainMessage() ;
             message.what = num;
