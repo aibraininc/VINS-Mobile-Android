@@ -1215,7 +1215,9 @@ void ViewController::showInputView() {
             start_show = true;
             finish_init = true;
         }
-        
+
+
+        // get position of robot (latest values)
         float x_view = (float)vins.correct_Ps[WINDOW_SIZE-1][0];
         float y_view = (float)vins.correct_Ps[WINDOW_SIZE-1][1];
         float z_view = (float)vins.correct_Ps[WINDOW_SIZE-1][2];
@@ -1224,7 +1226,7 @@ void ViewController::showInputView() {
 //        yaw_view =
 //            atan2((float)vins.correct_Rs[0](1,0),(float)vins.correct_Rs[0](0,0) );
 
-
+        // calculate yaw with rotation vector
         yaw_view =
             atan2((float)vins.correct_Rs[WINDOW_SIZE-1](1,0),(float)vins.correct_Rs[WINDOW_SIZE-1](0,0) );
 
