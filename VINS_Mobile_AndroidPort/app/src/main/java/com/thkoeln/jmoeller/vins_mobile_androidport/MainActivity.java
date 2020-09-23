@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     
     // JNI Object
     private VinsJNI vinsJNI;
+    private boolean vinsDisabled;
 
     // TextViews
     private TextView tvX;
@@ -168,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         // first make sure the necessary permissions are given
         checkPermissionsIfNeccessary();
         
@@ -249,8 +250,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
      * initializes an new VinsJNI Object
      */
     private void initVINS() {
+        vinsDisabled = false;
         vinsJNI = new VinsJNI();
         vinsJNI.init();
+    }
+
+    private void deleteVINS() {
+        vinsDisabled = true;
+        vinsJNI.delete();
     }
 
     /**
@@ -293,7 +300,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d(TAG,"arSwitch State = " + isChecked);
-                VinsJNI.onARSwitch(isChecked);
+                if(!vinsDisabled)
+                    VinsJNI.onARSwitch(isChecked);
             }
         });
         
@@ -302,7 +310,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d(TAG,"loopSwitch State = " + isChecked);
-                VinsJNI.onLoopSwitch(isChecked);
+                if(!vinsDisabled)
+                    VinsJNI.onLoopSwitch(isChecked);
             }
         });
 
@@ -490,7 +499,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             boolean isScreenRotated = currentRotation != Surface.ROTATION_90;
             
             // pass image to c++ part
-            VinsJNI.onImageAvailable(image.getWidth(), image.getHeight(), 
+            if(!vinsDisabled)
+                VinsJNI.onImageAvailable(image.getWidth(), image.getHeight(),
                                      Y_rowStride, Y_plane.getBuffer(), 
                                      UV_rowStride, U_plane.getBuffer(), V_plane.getBuffer(), 
                                      surface, image.getTimestamp(), isScreenRotated,
@@ -499,9 +509,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             // run the updateViewInfo function on the UI Thread so it has permission to modify it
             runOnUiThread(new Runnable() {
                 public void run() {
-                    VinsJNI.updateViewInfo(tvX, tvY, tvZ, tvTotal, tvLoop, tvFeature, tvBuf, ivInit);
+                    if(!vinsDisabled)
+                        VinsJNI.updateViewInfo(tvX, tvY, tvZ, tvTotal, tvLoop, tvFeature, tvBuf, ivInit);
                     // Get position from Vins and store the position to global variable "robotPosition"
-                    robotPosition = VinsJNI.getPosition();
+                    if(!vinsDisabled)
+                        robotPosition = VinsJNI.getPosition();
                 }
             });
 
@@ -578,12 +590,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public void onClick(View view) {
         if(isSLAM) {
             // stop slam
-            vinsJNI.onStopSLAM();
+            if(!vinsDisabled)
+                vinsJNI.onStopSLAM();
             isSLAM = false;
         }
         else {
             // start slam
-            vinsJNI.onRestartSLAM();
+            if(!vinsDisabled)
+                vinsJNI.onRestartSLAM();
             isSLAM = true;
         }
     }
@@ -606,8 +620,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             // 타이키 slam을 멈춘다.
             if(matches_text.get(0).contains("그만")){
-                vinsJNI.onStopSLAM();
-                isSLAM = false;
+                    this.deleteVINS();
             }
 
             // 앞으로 이동한다.

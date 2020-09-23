@@ -16,7 +16,10 @@ public class VinsJNI implements Serializable {
     static { System.loadLibrary("NativeLib"); }
     
     public native void init();
-    
+
+    public native void delete();
+
+
     public static native void onImageAvailable(int width, int height, int rowStrideY, ByteBuffer bufferY, 
                                                int rowStrideUV, ByteBuffer bufferU, ByteBuffer bufferV, 
                                                Surface surface, long timeStamp, boolean isScreenRotated,

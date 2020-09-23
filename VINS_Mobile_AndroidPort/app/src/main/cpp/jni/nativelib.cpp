@@ -31,6 +31,15 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_init(JNIEnv *env, jo
     viewControllerGlobal->viewDidLoad();
 }
 
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_delete(JNIEnv *env, jobject instance) {
+    viewControllerGlobal.reset(nullptr);
+}
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onImageAvailable(JNIEnv *env, jclass type,
@@ -46,6 +55,10 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onImageAvailable(JNI
                                                                            jfloat virtualCamDistance) {
 
 //    LOGI("Received image with width: %d height: %d", width, height);
+
+    if(!viewControllerGlobal) {
+        return;
+    }
 
     double timeStampSec = ViewController::timeStampToSec(timeStamp);
     // IMU Meassurements are momentary meassurements. 
@@ -127,6 +140,9 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onPause(JNIEnv *env, jclass type) {
     LOGI("Pause triggered, stopping SensorEvents");
+    if(!viewControllerGlobal) {
+        return;
+    }
     viewControllerGlobal->imuStopUpdate();
 }
 
@@ -134,6 +150,9 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onPause(JNIEnv *env,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onRestartSLAM(JNIEnv *env, jclass type) {
+    if(!viewControllerGlobal) {
+        return;
+    }
     viewControllerGlobal->isSLAM = true;
 }
 
@@ -141,6 +160,9 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onRestartSLAM(JNIEnv
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_onStopSLAM(JNIEnv *env, jclass type) {
+    if(!viewControllerGlobal) {
+        return;
+    }
     viewControllerGlobal->isSLAM = false;
 }
 
@@ -160,6 +182,9 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_updateViewInfo(JNIEn
                                                                          jobject tvBuf,
                                                                          jobject ivInit) {
 
+    if(!viewControllerGlobal) {
+        return;
+    }
     // Get the method handles
     jclass tvClass = env->FindClass("android/widget/TextView");
     jmethodID setTextID = env->GetMethodID(tvClass, "setText", "(Ljava/lang/CharSequence;)V");
