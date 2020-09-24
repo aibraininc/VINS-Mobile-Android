@@ -16,6 +16,7 @@ public class VinsJNI implements Serializable {
     static { System.loadLibrary("NativeLib"); }
     
     public native void init();
+    public native void release();
 
     public native void delete();
 

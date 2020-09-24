@@ -122,7 +122,13 @@ private:
     std::thread saveData;          // NSThread *saveData;
     std::thread loop_thread;       // NSThread *loop_thread;
     std::thread globalLoopThread;  // NSThread *globalLoopThread;
-//UITextView *textY;
+
+    pthread_t saveData_pthread;
+    pthread_t mainLoop_pthread;
+    pthread_t globalLoop_pthread;
+    pthread_t loop_thread_pthread;
+
+    //UITextView *textY;
 //}
 
 //@interface ViewController ()
@@ -362,6 +368,7 @@ public:
 // MARK: ViewController Methods
 
     void viewDidLoad();
+    void viewDidUnload();
 
 /*
  Main process image thread: this thread detects and track feature between two continuous images
@@ -973,17 +980,16 @@ public:
         loop_thread_isCancelled = true; // [loop_thread cancel];
 #endif
     }
-
-    void viewDidUnload() {
-//-(void)viewDidUnload{
-        /*
-        [motionManager stopAccelerometerUpdates];
-        [motionManager stopDeviceMotionUpdates];
-        [motionManager stopGyroUpdates];
-        [motionManager stopMagnetometerUpdates];
-        [super viewDidUnload];
-         */
-    }
+//    void viewDidUnload() {
+////-(void)viewDidUnload{
+//        /*
+//        [motionManager stopAccelerometerUpdates];
+//        [motionManager stopDeviceMotionUpdates];
+//        [motionManager stopGyroUpdates];
+//        [motionManager stopMagnetometerUpdates];
+//        [super viewDidUnload];
+//         */
+//    }
 
     void dealloc() {
 //- (void)dealloc

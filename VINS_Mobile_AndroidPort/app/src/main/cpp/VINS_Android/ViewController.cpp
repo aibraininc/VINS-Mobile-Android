@@ -19,6 +19,37 @@ ViewController::~ViewController() {
     LOGI("ViewController Destructor");
 }
 
+void ViewController::viewDidUnload() {
+    LOGI("TEST viewDidUnload");
+    saveData_isCancelled = true;
+    mainLoop_isCancelled = true;
+    loop_thread_isCancelled = true;
+    globalLoopThread_isCancelled= true;
+    //globalLoopThread.detach();
+    //pthread_cancel(saveData_pthread);
+//    int status_1 = pthread_kill(saveData_pthread, SIGKILL);
+//    LOGI("TEST pthread_kill failed 1");
+//    int status_2 = pthread_kill(loop_thread_pthread, SIGKILL);
+//    LOGI("TEST pthread_kill failed 2");
+//    int status_3 = pthread_kill(globalLoop_pthread, SIGKILL);
+//    LOGI("TEST pthread_kill failed 3");
+//    int status_4 = pthread_kill(mainLoop_pthread, SIGKILL);
+//    LOGI("TEST pthread_kill failed 4");
+    //loop_thread.detach();
+    //mainLoop.detach();
+//    mainLoop.join();
+//    LOGI("TEST pthread_kill failed 5");
+//    saveData.join();
+//    LOGI("TEST pthread_kill failed 6");
+//    loop_thread.join();
+//    LOGI("TEST pthread_kill failed 7");
+//    globalLoopThread.join();
+//    LOGI("TEST pthread_kill failed 8");
+
+//    if ( status_1 <  0)
+//        LOGI("TEST pthread_kill failed");
+}
+
 void ViewController::viewDidLoad() {
 //- (void)viewDidLoad {
 //[super viewDidLoad];
@@ -78,11 +109,13 @@ void ViewController::viewDidLoad() {
     /****************************************Init all the thread****************************************/
 //        _condition=[[NSCondition alloc] init];
     mainLoop = std::thread(&ViewController::run, this);
+    mainLoop_pthread = mainLoop.native_handle();
     // TODO: move further down
     // mainLoop=[[NSThread alloc]initWithTarget:self selector:@selector(run) object:nil];
     // [mainLoop setName:@"mainLoop"];
 
     saveData = std::thread(&ViewController::saveDataLoop, this);
+    saveData_pthread = saveData.native_handle();
     // TODO: move further down
 //        saveData=[[NSThread alloc]initWithTarget:self selector:@selector(saveData) object:nil];
 //        [saveData setName:@"saveData"];
@@ -90,12 +123,16 @@ void ViewController::viewDidLoad() {
     if(LOOP_CLOSURE)
     {
         //loop closure thread
-        loop_thread = std::thread(&ViewController::loopDetectionLoop, this); /*
+        loop_thread = std::thread(&ViewController::loopDetectionLoop, this);
+        loop_thread_pthread = loop_thread.native_handle();
+        /*
             loop_thread = [[NSThread alloc]initWithTarget:self selector:@selector(loop_thread) object:nil];
             [loop_thread setName:@"loop_thread"];
             [loop_thread start];*/
 
-        globalLoopThread = std::thread(&ViewController::globalPoseGraphLoop, this); /*
+        globalLoopThread = std::thread(&ViewController::globalPoseGraphLoop, this);
+        globalLoop_pthread = globalLoopThread.native_handle();
+        /*
             globalLoopThread=[[NSThread alloc]initWithTarget:self selector:@selector(globalLoopThread) object:nil];
             [globalLoopThread setName:@"globalLoopThread"];
             [globalLoopThread start];*/
@@ -551,6 +588,7 @@ void ViewController::run() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // [NSThread sleepForTimeInterval:0.01];
         LOGI("THREAD: Main Thread iteration done");
     }
+    LOGI("TEST mainLoop_isCancelled");
     _condition.unlock(); //[_condition unlock];
 
 }
@@ -839,6 +877,8 @@ void ViewController::loopDetectionLoop() {
             std::this_thread::sleep_for(std::chrono::seconds(2)); // [NSThread sleepForTimeInterval:2.0];
         std::this_thread::sleep_for(std::chrono::milliseconds(50)); // [NSThread sleepForTimeInterval:0.05];
     }
+    LOGI("TEST loopDetectionLoop");
+
     //[self process_loop_detection];
 }
 
@@ -861,6 +901,7 @@ void ViewController::globalPoseGraphLoop() {
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(30)); // [NSThread sleepForTimeInterval:0.03];
     }
+    LOGI("TEST globalLoopThread_isCancelled");
 }
 
 void ViewController::imuStopUpdate() {
@@ -1057,6 +1098,8 @@ void ViewController::saveDataLoop() {
 //            }
         std::this_thread::sleep_for(std::chrono::milliseconds(40)); // [NSThread sleepForTimeInterval:0.04];
     }
+    LOGI("TEST saveDataLoop");
+
 }
 
 DeviceType ViewController::deviceName() {

@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
 
         // tyche open
-        tycheControlHelper.open();
+//        tycheControlHelper.open();
         tts = new TextToSpeech(MainActivity.this, this);
 
         // enable obstacle detecting mode. Default is moving backward when Tyche meets obstacles.
@@ -197,10 +197,23 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     @Override
     protected void onDestroy() {
+        Log.e("onDestroy","onDestroy");
         super.onDestroy();
+        VinsJNI.onPause();
+        vinsJNI.release();
+
+        if (null != camera) {
+            camera.close();
+            camera = null;
+        }
+        if (null != imageReader) {
+            imageReader.close();
+            imageReader = null;
+        }
+
 
         // tyche close
-        tycheControlHelper.close(true);
+//        tycheControlHelper.close(true);
         if (tts != null) {
             tts.stop();
             tts.shutdown();
@@ -501,8 +514,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             // pass image to c++ part
             if(!vinsDisabled)
                 VinsJNI.onImageAvailable(image.getWidth(), image.getHeight(),
-                                     Y_rowStride, Y_plane.getBuffer(), 
-                                     UV_rowStride, U_plane.getBuffer(), V_plane.getBuffer(), 
+                                     Y_rowStride, Y_plane.getBuffer(),
+                                     UV_rowStride, U_plane.getBuffer(), V_plane.getBuffer(),
                                      surface, image.getTimestamp(), isScreenRotated,
                                      virtualCamDistance);
 
@@ -524,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /**
      * shutting down onPause
      */
+
     protected void onPause() {
         Log.e("onPause","onPause");
 //        if (null != camera) {
@@ -620,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             // 타이키 slam을 멈춘다.
             if(matches_text.get(0).contains("그만")){
-                    this.deleteVINS();
+
             }
 
             // 앞으로 이동한다.
