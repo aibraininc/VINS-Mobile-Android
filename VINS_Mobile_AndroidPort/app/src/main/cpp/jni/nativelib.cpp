@@ -16,13 +16,13 @@
 // global variable to viewController 
 // because its much less of a hassle 
 // than to pass pointers to Java and back
-//std::unique_ptr<ViewController> viewControllerGlobal;
-ViewController* viewControllerGlobal;
+std::unique_ptr<ViewController> viewControllerGlobal;
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_init(JNIEnv *env, jobject instance) {
     
-    viewControllerGlobal = new ViewController;
+    viewControllerGlobal = std::unique_ptr<ViewController>(new ViewController);
     LOGI("Successfully created Viewcontroller Object");
     
     viewControllerGlobal->testMethod();
@@ -35,6 +35,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_release(JNIEnv *env, jobject instance) {
     viewControllerGlobal->viewDidUnload();
+    viewControllerGlobal.release();
 //    viewControllerGlobal->viewDidUnload();
 //    viewControllerGlobal->viewDidUnload();
     //viewControllerGlobal->~ViewController();
@@ -46,14 +47,12 @@ Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_release(JNIEnv *env,
         LOGI("TEST release  Viewcontroller Object");
         count = count+1;
     }
-//    delete viewControllerGlobal;
-
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_thkoeln_jmoeller_vins_1mobile_1androidport_VinsJNI_delete(JNIEnv *env, jobject instance) {
-//    viewControllerGlobal.reset(nullptr);
+    viewControllerGlobal.reset(nullptr);
 }
 
 
