@@ -199,9 +199,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     protected void onDestroy() {
         Log.e("onDestroy","onDestroy");
         super.onDestroy();
-        VinsJNI.onPause();
-        vinsJNI.release();
-
+        deleteVINS();
         if (null != camera) {
             camera.close();
             camera = null;
@@ -210,6 +208,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             imageReader.close();
             imageReader = null;
         }
+
+
+        VinsJNI.onPause();
+        vinsJNI.release();
+
 
 
         // tyche close
@@ -270,7 +273,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     private void deleteVINS() {
         vinsDisabled = true;
-        vinsJNI.delete();
     }
 
     /**

@@ -26,6 +26,24 @@ void ViewController::viewDidUnload() {
     loop_thread_isCancelled = true;
     globalLoopThread_isCancelled= true;
     //globalLoopThread.detach();
+
+    if(saveData.joinable()){
+        LOGI("TEST saveData joinable");
+        saveData.join();
+    }
+    if(mainLoop.joinable()){
+        LOGI("TEST mainLoop joinable");
+        mainLoop.join();
+    }
+    if(loop_thread.joinable()){
+        LOGI("TEST loop_thread joinable");
+        loop_thread.join();
+    }
+    if(globalLoopThread.joinable()){
+        LOGI("TEST globalLoopThread joinable");
+        globalLoopThread.join();
+    }
+
     //pthread_cancel(saveData_pthread);
 //    int status_1 = pthread_kill(saveData_pthread, SIGKILL);
 //    LOGI("TEST pthread_kill failed 1");
@@ -582,9 +600,11 @@ void ViewController::run() {
     _condition.lock(); //[_condition lock];
     while(!mainLoop_isCancelled) // while (![[NSThread currentThread] isCancelled])
     {
-        LOGI("THREAD: Main Thread(run): process()");
+        LOGI("THREAD: Main Thread(run): process()1 ");
         if(isSLAM)
+            LOGI("THREAD: Main Thread(run): process()2");
         process(); // [self process];
+        LOGI("THREAD: Main Thread(run): process()3");
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // [NSThread sleepForTimeInterval:0.01];
         LOGI("THREAD: Main Thread iteration done");
     }
@@ -596,13 +616,24 @@ void ViewController::run() {
 void ViewController::process() {
 //-(void)process
 //{
+
+    LOGI("THREAD: Main Thread(run): process() 99");
+
     std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr>> measurements;
     std::unique_lock<std::mutex> lk(m_buf);
-    con.wait(lk, [&] {
+    con.wait_for(lk,std::chrono::seconds(2), [&] {
         measurements = getMeasurements();
         return measurements.size() != 0;
 //                return (measurements = getMeasurements()).size() != 0;
     });
+//    con.wait(lk, [&] {
+//        measurements = getMeasurements();
+//        return measurements.size() != 0;
+////                return (measurements = getMeasurements()).size() != 0;
+//    });
+
+    LOGI("THREAD: Main Thread(run): process() 100");
+
     lk.unlock();
     waiting_lists = measurements.size();
     for(auto &measurement : measurements)
@@ -780,7 +811,12 @@ void ViewController::process() {
         //finish solve one frame
         showInputView();
         // [self performSelectorOnMainThread:@selector(showInputView) withObject:nil waitUntilDone:YES];
+        LOGI("THREAD: Main Thread(run): process() 101");
+
     }
+
+    LOGI("THREAD: Main Thread(run): process() 102");
+
 }
 
 void ViewController::loopDetectionLoop() {
