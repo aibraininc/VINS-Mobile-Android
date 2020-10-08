@@ -37,11 +37,12 @@ public class PlaceInfo {
     }
 
 
-
+    // 현재 사용하지않음.
     float calculateAngle() {
         return (float) Math.atan(y/x);
     }
 
+    // 현재 사용하지않음.
     float calculateAngle(float _x, float _y) {
         double angle1 = Math.atan(_y/_x);
         double angle2 = Math.atan(y/x);

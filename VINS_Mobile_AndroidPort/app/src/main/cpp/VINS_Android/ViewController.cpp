@@ -27,22 +27,22 @@ void ViewController::viewDidUnload() {
     globalLoopThread_isCancelled= true;
     //globalLoopThread.detach();
 
-    if(saveData.joinable()){
-        LOGI("TEST saveData joinable");
-        saveData.join();
-    }
+//    if(saveData.joinable()){
+//        LOGI("TEST saveData joinable");
+//        saveData.join();
+//    }
     if(mainLoop.joinable()){
         LOGI("TEST mainLoop joinable");
         mainLoop.join();
     }
-    if(loop_thread.joinable()){
-        LOGI("TEST loop_thread joinable");
-        loop_thread.join();
-    }
-    if(globalLoopThread.joinable()){
-        LOGI("TEST globalLoopThread joinable");
-        globalLoopThread.join();
-    }
+//    if(loop_thread.joinable()){
+//        LOGI("TEST loop_thread joinable");
+//        loop_thread.join();
+//    }
+//    if(globalLoopThread.joinable()){
+//        LOGI("TEST globalLoopThread joinable");
+//        globalLoopThread.join();
+//    }
 
     //pthread_cancel(saveData_pthread);
 //    int status_1 = pthread_kill(saveData_pthread, SIGKILL);
@@ -608,7 +608,7 @@ void ViewController::run() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // [NSThread sleepForTimeInterval:0.01];
         LOGI("THREAD: Main Thread iteration done");
     }
-    LOGI("TEST mainLoop_isCancelled");
+    LOGI("TEST mainLoop_isCancelled END");
     _condition.unlock(); //[_condition unlock];
 
 }
@@ -913,7 +913,7 @@ void ViewController::loopDetectionLoop() {
             std::this_thread::sleep_for(std::chrono::seconds(2)); // [NSThread sleepForTimeInterval:2.0];
         std::this_thread::sleep_for(std::chrono::milliseconds(50)); // [NSThread sleepForTimeInterval:0.05];
     }
-    LOGI("TEST loopDetectionLoop");
+    LOGI("TEST loopDetectionLoop END");
 
     //[self process_loop_detection];
 }
@@ -937,7 +937,7 @@ void ViewController::globalPoseGraphLoop() {
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(30)); // [NSThread sleepForTimeInterval:0.03];
     }
-    LOGI("TEST globalLoopThread_isCancelled");
+    LOGI("TEST globalLoopThread_isCancelled END");
 }
 
 void ViewController::imuStopUpdate() {
@@ -1134,7 +1134,7 @@ void ViewController::saveDataLoop() {
 //            }
         std::this_thread::sleep_for(std::chrono::milliseconds(40)); // [NSThread sleepForTimeInterval:0.04];
     }
-    LOGI("TEST saveDataLoop");
+    LOGI("TEST saveDataLoop END");
 
 }
 

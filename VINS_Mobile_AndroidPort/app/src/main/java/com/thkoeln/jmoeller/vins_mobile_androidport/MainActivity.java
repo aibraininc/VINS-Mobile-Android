@@ -213,8 +213,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         VinsJNI.onPause();
         vinsJNI.release();
 
-
-
         // tyche close
 //        tycheControlHelper.close(true);
         if (tts != null) {
@@ -283,7 +281,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         slamButton = (Button) findViewById(R.id.button);
         slamButton.setOnClickListener(this);
-//
+
+        /**
+        * 음성인식 인텐트 호출, activity_result에서 음성인식 결과물을 받는다.
+        */
         Button speechButton = (Button)findViewById(R.id.speech_button);
         speechButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -483,6 +484,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     /**
      *  At last the actual function with access to the image
      */
+    /**
+     * 카메라 이미지를 받는다.
+     * 이미지가 들어올떄마다 실행되는 함수
+     */
+
     private ImageReader.OnImageAvailableListener onImageAvailableListener = new ImageReader.OnImageAvailableListener() {
 
         /*
@@ -618,6 +624,9 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * 음성인식 인텐트, 음성인식 결과물 받아서 처리하는 부분.
+     */
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
