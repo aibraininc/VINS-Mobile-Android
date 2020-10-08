@@ -621,8 +621,9 @@ void ViewController::process() {
 
     std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr>> measurements;
     std::unique_lock<std::mutex> lk(m_buf);
-    con.wait_for(lk,std::chrono::seconds(2), [&] {
+    con.wait_for(lk,std::chrono::seconds(1), [&] {
         measurements = getMeasurements();
+        LOGI("THREAD: Main Thread(run): process() 99 %d", measurements.size());
         return measurements.size() != 0;
 //                return (measurements = getMeasurements()).size() != 0;
     });
